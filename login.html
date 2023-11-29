@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Renz's Website - Login</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: #fff; /* White background */
+            color: #333; /* Default text color */
+            text-align: center;
+            padding: 50px;
+        }
+
+        header {
+            background-color: #007BFF; /* Blue background for the header */
+            color: #fff; /* Text color for the header */
+            padding: 20px;
+        }
+
+        .login-container {
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            border: 1px solid #007BFF; /* Blue border for the login container */
+            border-radius: 5px;
+            background-color: #fff; /* White background for the login container */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Box shadow for a subtle effect */
+        }
+
+        h1 {
+            color: #007BFF; /* Blue color for the title */
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #007BFF; /* Blue background for the button */
+            color: #fff; /* Text color for the button */
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Renz's Website</h1>
+    </header>
+
+    <div class="login-container">
+        <h2>Login</h2>
+        <!-- Simple login form for demonstration purposes -->
+        <form action="welcome.html" method="post">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" value="demo" required>
+
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" value="demo" required>
+
+            <!-- Log In button redirects to welcome.html upon form submission -->
+            <button type="submit">Log In</button>
+        </form>
+    </div>
+</body>
+</html>
