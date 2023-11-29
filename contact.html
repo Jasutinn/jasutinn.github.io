@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: #fff;
+        }
+
+        header {
+            background-color: #000;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+        }
+
+        nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav li {
+            display: inline;
+            margin-right: 20px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        section {
+            padding: 50px 20px;
+        }
+
+        .contact-form {
+            max-width: 400px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+
+        .form-button {
+            background-color: #007BFF;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        footer {
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            padding: 10px 0;
+            width: 100%; 
+            clear: both;
+        }
+    </style>
+    <title>Contact Us</title>
+</head>
+<body>
+    <header>
+        <h1>Contact Us</h1>
+        <nav>
+            <ul>
+                <li><a href="https://jasutinn.github.io">Home</a></li>
+                <li><a href="https://jasutinn.github.io/about.html">About</a></li>
+                <li><a href="https://jasutinn.github.io/services.html">Services</a></li>
+                <li><a href="https://jasutinn.github.io/contact.html">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section id="contact">
+        <div class="contact-form">
+            <h2>Get in Touch</h2>
+            <form action="mailto:justinevaughnr@outlook.com" method="post" enctype="text/plain">
+                <input type="text" name="name" placeholder="Your Name" class="form-input" required>
+                <input type="email" name="email" placeholder="Your Email" class="form-input" required>
+                <textarea name="message" placeholder="Your Message" class="form-input" rows="4" required></textarea>
+                <button type="submit" class="form-button">Send Message</button>
+            </form>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2023 Your Contact Us Website. All rights reserved.</p>
+    </footer>
+</body>
+</html>
