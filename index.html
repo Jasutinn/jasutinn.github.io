@@ -23,6 +23,7 @@
             list-style: none;
             margin: 0;
             padding: 0;
+            text-align: center;
         }
 
         nav li {
@@ -38,6 +39,7 @@
 
         section {
             padding: 50px 20px;
+            text-align: center;
         }
 
         .hero {
@@ -68,6 +70,18 @@
             width: 100%;
             clear: both;
         }
+
+        /* Responsive Styling */
+        @media only screen and (max-width: 600px) {
+            nav {
+                text-align: center;
+            }
+
+            nav li {
+                display: block;
+                margin-bottom: 10px;
+            }
+        }
     </style>
     <title>Justine Dela Torre - Personal Webpage</title>
 </head>
@@ -76,7 +90,7 @@
         <h1>Jasutinn - Personal Webpage</h1>
         <nav>
             <ul>
-                <li><a href="https://jasutinn.github.io"></a>Home</li>
+                <li><a href="https://jasutinn.github.io">Home</a></li>
                 <li><a href="https://jasutinn.github.io/about.html">About</a></li>
                 <li><a href="https://jasutinn.github.io/expertise.html">Expertise</a></li>
                 <li><a href="https://jasutinn.github.io/contact.html">Contact</a></li>
