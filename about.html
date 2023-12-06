@@ -23,6 +23,7 @@
             list-style: none;
             margin: 0;
             padding: 0;
+            text-align: center;
         }
 
         nav li {
@@ -38,10 +39,13 @@
 
         section {
             padding: 50px 20px;
+            text-align: center;
         }
 
         .about-content {
-            text-align: center;
+            text-align: left;
+            max-width: 800px;
+            margin: 0 auto;
         }
 
         footer {
@@ -49,8 +53,24 @@
             color: #fff;
             text-align: center;
             padding: 10px 0;
-            width: 100%; /* Set the width to 100% */
-            clear: both; /* Clear both sides to avoid overlapping */
+            width: 100%;
+            clear: both;
+        }
+
+        /* Responsive Styling */
+        @media only screen and (max-width: 600px) {
+            nav {
+                text-align: center;
+            }
+
+            nav li {
+                display: block;
+                margin-bottom: 10px;
+            }
+
+            .about-content {
+                padding: 0 20px;
+            }
         }
     </style>
     <title>Justine Dela Torre - Personal Webpage</title>
@@ -61,7 +81,7 @@
         <nav>
             <ul>
                 <li><a href="https://jasutinn.github.io">Home</a></li>
-                <li><a href="https://jasutinn.github.io/about.html"></a>About</li>
+                <li><a href="https://jasutinn.github.io/about.html">About</a></li>
                 <li><a href="https://jasutinn.github.io/expertise.html">Expertise</a></li>
                 <li><a href="https://jasutinn.github.io/contact.html">Contact</a></li>
             </ul>
