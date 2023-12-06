@@ -9,7 +9,7 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            background-color: #fff; 
+            background-color: #fff;
         }
 
         header {
@@ -23,6 +23,7 @@
             list-style: none;
             margin: 0;
             padding: 0;
+            text-align: center;
         }
 
         nav li {
@@ -38,10 +39,13 @@
 
         section {
             padding: 50px 20px;
+            text-align: center;
         }
 
-        .hero {
-            text-align: center;
+        .expertise-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: left;
         }
 
         footer {
@@ -49,8 +53,24 @@
             color: #fff;
             text-align: center;
             padding: 10px 0;
-            width: 100%; 
+            width: 100%;
             clear: both;
+        }
+
+        /* Responsive Styling */
+        @media only screen and (max-width: 600px) {
+            nav {
+                text-align: center;
+            }
+
+            nav li {
+                display: block;
+                margin-bottom: 10px;
+            }
+
+            .expertise-content {
+                padding: 0 20px;
+            }
         }
     </style>
     <title>Jasutinn - Personal Webpage</title>
@@ -62,7 +82,7 @@
             <ul>
                 <li><a href="https://jasutinn.github.io/">Home</a></li>
                 <li><a href="https://jasutinn.github.io/about.html">About</a></li>
-                <li><a href="https://jasutinn.github.io/services.html"></a>Expertise</li>
+                <li><a href="https://jasutinn.github.io/services.html">Expertise</a></li>
                 <li><a href="https://jasutinn.github.io/contact.html">Contact</a></li>
             </ul>
         </nav>
