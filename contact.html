@@ -23,6 +23,7 @@
             list-style: none;
             margin: 0;
             padding: 0;
+            text-align: center;
         }
 
         nav li {
@@ -38,6 +39,7 @@
 
         section {
             padding: 50px 20px;
+            text-align: center;
         }
 
         .contact-form {
@@ -70,6 +72,22 @@
             width: 100%; 
             clear: both;
         }
+
+        /* Responsive Styling */
+        @media only screen and (max-width: 600px) {
+            nav {
+                text-align: center;
+            }
+
+            nav li {
+                display: block;
+                margin-bottom: 10px;
+            }
+
+            .contact-form {
+                padding: 0 20px;
+            }
+        }
     </style>
     <title>Jasutinn - Personal Webpage</title>
 </head>
@@ -81,7 +99,7 @@
                 <li><a href="https://jasutinn.github.io">Home</a></li>
                 <li><a href="https://jasutinn.github.io/about.html">About</a></li>
                 <li><a href="https://jasutinn.github.io/expertise.html">Expertise</a></li>
-                <li><a href="https://jasutinn.github.io/contact.html"></a>Contact</li>
+                <li><a href="https://jasutinn.github.io/contact.html">Contact</a></li>
             </ul>
         </nav>
     </header>
