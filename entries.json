@@ -1,0 +1,26 @@
+[
+    {
+        "date": "2025-02-25",
+        "title": "My First Entry",
+        "content": "Ngayon ay napaka-productive kong araw! Nag-set up ako ng journal ko sa GitHub Pages.",
+        "category": "Personal"
+    },
+    {
+        "date": "2025-02-26",
+        "title": "Another Day",
+        "content": "Medyo busy ako ngayon, pero okay lang. Naisip ko na magdagdag ng CSS para gumanda ang layout.",
+        "category": "Work"
+    },
+    {
+        "date": "2025-02-27",
+        "title": "Today's Thoughts",
+        "content": "Napakaraming nangyari ngayong araw. Masaya akong natapos ko ang isang proyekto!",
+        "category": "Personal"
+    },
+    {
+        "date": "2025-02-28",
+        "title": "A Productive Day",
+        "content": "Sinubukan kong mag-aral ng bagong tech today. Medyo mahirap pero exciting!",
+        "category": "Learning"
+    }
+]
