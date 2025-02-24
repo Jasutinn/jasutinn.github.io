@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Justine's Journal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: auto;
+            padding: 20px;
+            background-color: var(--bg-color, #fff);
+            color: var(--text-color, #000);
+        }
+        h1 { text-align: center; }
+        .entry { border-bottom: 1px solid #ddd; padding: 10px 0; }
+        .date { font-weight: bold; color: #555; }
+        .dark-mode {
+            --bg-color: #121212;
+            --text-color: #ffffff;
+        }
+        #search { width: 100%; padding: 8px; margin-bottom: 10px; }
+        .toggle-container { text-align: right; }
+        button { padding: 5px 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="toggle-container">
+        <button onclick="toggleDarkMode()">🌙 Dark Mode</button>
+    </div>
+    <h1>My Daily Journal</h1>
+    
+    <input type="text" id="search" placeholder="Search journal entries..." onkeyup="filterEntries()">
+    
+    <label for="sort">Sort by:</label>
+    <select id="sort" onchange="loadEntries()">
+        <option value="newest">Newest to Oldest</option>
+        <option value="oldest">Oldest to Newest</option>
+    </select>
+    
+    <label for="category">Category:</label>
+    <select id="category" onchange="loadEntries()">
+        <option value="all">All</option>
+    </select>
+    
+    <div id="journal-entries">Loading...</div>
+
+    <script>
+        let entries = [];
+
+        async function loadEntries() {
+            try {
+                const response = await fetch('entries.json');
+                entries = await response.json();
+                renderEntries();
+                populateCategories();
+            } catch (error) {
+                console.error("Failed to load journal entries:", error);
+                document.getElementById("journal-entries").innerHTML = "Failed to load journal entries.";
+            }
+        }
+
+        function renderEntries() {
+            const container = document.getElementById("journal-entries");
+            container.innerHTML = "";
+            let filteredEntries = [...entries];
+
+            // Filter by category
+            const selectedCategory = document.getElementById("category").value;
+            if (selectedCategory !== "all") {
+                filteredEntries = filteredEntries.filter(entry => entry.category === selectedCategory);
+            }
+
+            // Sort by date
+            const sortOrder = document.getElementById("sort").value;
+            filteredEntries.sort((a, b) => sortOrder === "newest" 
+                ? new Date(b.date) - new Date(a.date) 
+                : new Date(a.date) - new Date(b.date));
+
+            // Display entries
+            filteredEntries.forEach(entry => {
+                const div = document.createElement("div");
+                div.className = "entry";
+                div.innerHTML = `<div class="date">${entry.date}</div>
+                                 <h2>${entry.title}</h2>
+                                 <p>${entry.content}</p>
+                                 <small><strong>Category:</strong> ${entry.category || 'Uncategorized'}</small>`;
+                container.appendChild(div);
+            });
+        }
+
+        function filterEntries() {
+            const query = document.getElementById("search").value.toLowerCase();
+            document.querySelectorAll(".entry").forEach(entry => {
+                entry.style.display = entry.innerText.toLowerCase().includes(query) ? "block" : "none";
+            });
+        }
+
+        function toggleDarkMode() {
+            document.body.classList.toggle("dark-mode");
+        }
+
+        function populateCategories() {
+            const categoryDropdown = document.getElementById("category");
+            const categories = ["all", ...new Set(entries.map(entry => entry.category))];
+            categoryDropdown.innerHTML = categories.map(cat => `<option value="${cat}">${cat}</option>`).join("");
+        }
+
+        loadEntries();
+    </script>
+</body>
+</html>
