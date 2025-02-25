@@ -1,0 +1,28 @@
+name: Update Journal Entries
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '0 * * * *' # Runs every hour
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  update_entries:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate entries.json
+        run: |
+          ls journal > entries.json
+          
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add entries.json
+          git commit -m "Update entries.json" || echo "No changes to commit"
+          git push origin gh-pages
