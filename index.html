@@ -7,31 +7,15 @@
     <style>
         body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; }
         h1 { text-align: center; }
-        ul { list-style: none; padding: 0; }
-        li { margin: 10px 0; }
-        a { text-decoration: none; color: #007bff; font-weight: bold; }
+        ul { list-style-type: none; padding: 0; }
+        li { padding: 10px 0; }
+        a { text-decoration: none; color: blue; }
     </style>
 </head>
 <body>
     <h1>My Journal</h1>
-    <ul id="journalList">Loading...</ul>
+    <ul id="entries"></ul>
 
-    <script>
-        fetch("entries.json")
-            .then(response => response.json())
-            .then(entries => {
-                let list = document.getElementById("journalList");
-                list.innerHTML = "";
-
-                entries.forEach(entry => {
-                    let listItem = document.createElement("li");
-                    listItem.innerHTML = `<a href="entry.html?entry=${entry.file}">${entry.title} - ${entry.date}</a>`;
-                    list.appendChild(listItem);
-                });
-            })
-            .catch(error => {
-                document.getElementById("journalList").innerText = "Error loading journal entries.";
-            });
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
