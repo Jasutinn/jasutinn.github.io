@@ -7,9 +7,11 @@ journal_folder = "journal"
 entries_file = os.path.join(journal_folder, "entries.json")
 css_file = "style.css"  # Global CSS file
 
-entries = []
+entries = []  # Start fresh every time
+
+# Scan the journal folder for .md files
 for filename in os.listdir(journal_folder):
-    if filename.endswith(".md"):  # Only convert markdown files
+    if filename.endswith(".md"):  # Only process markdown files
         filepath = os.path.join(journal_folder, filename)
         
         # Read the Markdown file
@@ -23,7 +25,7 @@ for filename in os.listdir(journal_folder):
         html_filename = filename.rsplit(".", 1)[0] + ".html"
         html_filepath = os.path.join(journal_folder, html_filename)
 
-        # Wrap in a styled blog format
+        # Create the formatted HTML file
         with open(html_filepath, "w", encoding="utf-8") as f:
             f.write(f"""
             <!DOCTYPE html>
@@ -45,9 +47,11 @@ for filename in os.listdir(journal_folder):
             </html>
             """)
 
-        # Add to JSON index
+        # Add the new entry to the JSON list
         entries.append({"title": filename.replace(".md", ""), "file": html_filename})
 
-# Save entries.json
+# Overwrite entries.json with the updated list
 with open(entries_file, "w", encoding="utf-8") as f:
     json.dump(entries, f, indent=4)
+
+print("Journal entries successfully updated!")
