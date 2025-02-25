@@ -3,28 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Journal</title>
+    <title>Journal Entries</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; }
-        h1 { text-align: center; }
+        body { font-family: Arial, sans-serif; text-align: center; }
+        .entry { border-bottom: 1px solid #ccc; padding: 10px; }
+        .entry h2 { margin: 0; }
+        .entry a { text-decoration: none; color: #007bff; }
     </style>
 </head>
 <body>
-    <h1>My Journal</h1>
-    <ul id="entries-list"></ul>
+    <h1>My Journal Entries</h1>
+    <div id="entries"></div>
 
     <script>
-        fetch('entries.json')
-            .then(response => response.json())
-            .then(entries => {
-                const list = document.getElementById('entries-list');
-                entries.forEach(entry => {
-                    const li = document.createElement('li');
-                    li.innerHTML = `<a href="journal/${entry}.html">${entry}</a>`;
-                    list.appendChild(li);
-                });
-            })
-            .catch(error => console.error('Error loading entries:', error));
+        async function loadEntries() {
+            const response = await fetch("entries.json");
+            const entries = await response.json();
+            const container = document.getElementById("entries");
+
+            entries.forEach(entry => {
+                const div = document.createElement("div");
+                div.className = "entry";
+                div.innerHTML = `<h2><a href="journal/${entry.filename}" target="_blank">${entry.title}</a></h2>`;
+                container.appendChild(div);
+            });
+        }
+
+        loadEntries();
     </script>
 </body>
 </html>
