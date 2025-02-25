@@ -1,0 +1,28 @@
+name: Update Entries
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "journal/**"
+  workflow_dispatch:
+
+jobs:
+  update-entries:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Update entries.json
+        run: |
+          node scripts/updateEntries.js  # Adjust this based on how entries.json is generated
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add entries.json
+          git commit -m "Update entries.json" || echo "No changes to commit"
+          git push
