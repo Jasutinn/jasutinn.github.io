@@ -2,27 +2,30 @@ name: Update Journal Entries
 
 on:
   push:
-    branches: [main]
-  schedule:
-    - cron: '0 * * * *' # Runs every hour
-  workflow_dispatch: # Allows manual triggering
+    branches:
+      - default
+  workflow_dispatch:
 
 jobs:
-  update_entries:
+  update-entries:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
-      - name: Generate entries.json
-        run: |
-          ls journal > entries.json
-          
-      - name: Commit and push changes
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Run Python Script
+        run: python generate_entries.py
+
+      - name: Commit and Push Changes
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
-          git add entries.json
-          git commit -m "Update entries.json" || echo "No changes to commit"
-          git push origin gh-pages
+          git add journal/entries.json
+          git commit -m "Auto-update journal entries" || echo "No changes to commit"
+          git push
