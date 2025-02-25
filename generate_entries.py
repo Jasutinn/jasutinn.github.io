@@ -1,70 +1,140 @@
 import os
-import json
 import markdown
 import pdfplumber
+import docx
 from bs4 import BeautifulSoup
-from docx import Document
+from datetime import datetime
 
-# Directory containing journal entries
+# Define paths
 journal_dir = "journal"
-output_file = os.path.join(journal_dir, "entries.json")
+output_dir = "public/journal"
 
-# Function to read .txt files
-def read_txt(file_path):
-    with open(file_path, "r", encoding="utf-8") as f:
-        return f.read()
+# Create output directory if missing
+os.makedirs(output_dir, exist_ok=True)
 
-# Function to read .md files and convert to HTML
-def read_md(file_path):
-    with open(file_path, "r", encoding="utf-8") as f:
-        return markdown.markdown(f.read())
+# Define a formal & legal HTML template
+html_template = """<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{title}</title>
+    <style>
+        body {{
+            font-family: "Times New Roman", serif;
+            margin: 40px;
+            background-color: #f5f5f5;
+            color: #333;
+            text-align: justify;
+        }}
+        header {{
+            background-color: #00274D;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+        }}
+        article {{
+            background: white;
+            padding: 20px;
+            margin: 20px auto;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            line-height: 1.6;
+        }}
+        h1, h2, h3 {{
+            color: #00274D;
+        }}
+        p {{
+            text-indent: 50px;
+        }}
+        footer {{
+            text-align: center;
+            padding: 10px;
+            margin-top: 20px;
+            background-color: #00274D;
+            color: white;
+            font-size: 14px;
+        }}
+    </style>
+</head>
+<body>
+    <header>{header}</header>
+    <article>
+        {content}
+    </article>
+    <footer>Political Journal - {footer_date}</footer>
+</body>
+</html>
+"""
 
-# Function to read .html files
-def read_html(file_path):
-    with open(file_path, "r", encoding="utf-8") as f:
-        return f.read()  # No need to convert, already HTML
+# Function to convert Markdown to HTML
+def convert_md_to_html(md_text):
+    html = markdown.markdown(md_text)
+    return html
 
-# Function to read .pdf files
-def read_pdf(file_path):
+# Function to extract text from PDFs
+def extract_text_from_pdf(pdf_path):
     text = ""
-    with pdfplumber.open(file_path) as pdf:
+    with pdfplumber.open(pdf_path) as pdf:
         for page in pdf.pages:
             text += page.extract_text() + "\n"
-    return text.strip()
+    return text
 
-# Function to read .docx (Word) files
-def read_docx(file_path):
-    doc = Document(file_path)
+# Function to extract text from DOCX files
+def extract_text_from_docx(docx_path):
+    doc = docx.Document(docx_path)
     text = "\n".join([para.text for para in doc.paragraphs])
     return text
 
-# Process files
-entries = []
-if not os.path.exists(journal_dir):
-    os.makedirs(journal_dir)
+# Function to process and convert all journal entries
+def process_journal_entries():
+    for filename in os.listdir(journal_dir):
+        file_path = os.path.join(journal_dir, filename)
+        output_file = os.path.join(output_dir, f"{os.path.splitext(filename)[0]}.html")
 
-for filename in os.listdir(journal_dir):
-    if filename == "entries.json":
-        continue  # Skip the JSON file itself
+        if filename.endswith(".md"):
+            with open(file_path, "r", encoding="utf-8") as f:
+                raw_text = f.read()
+                formatted_text = convert_md_to_html(raw_text)
+        
+        elif filename.endswith(".txt"):
+            with open(file_path, "r", encoding="utf-8") as f:
+                raw_text = f.read()
+                formatted_text = f"<p>{raw_text.replace('\n', '</p><p>')}</p>"
+        
+        elif filename.endswith(".pdf"):
+            raw_text = extract_text_from_pdf(file_path)
+            formatted_text = f"<p>{raw_text.replace('\n', '</p><p>')}</p>"
+        
+        elif filename.endswith(".docx"):
+            raw_text = extract_text_from_docx(file_path)
+            formatted_text = f"<p>{raw_text.replace('\n', '</p><p>')}</p>"
+        
+        else:
+            print(f"Skipping unsupported file: {filename}")
+            continue
 
-    file_path = os.path.join(journal_dir, filename)
-    entry = {"title": filename, "content": ""}
+        # Clean up using BeautifulSoup
+        soup = BeautifulSoup(formatted_text, "html.parser")
+        cleaned_text = str(soup.prettify())
 
-    if filename.endswith(".txt"):
-        entry["content"] = read_txt(file_path)
-    elif filename.endswith(".md"):
-        entry["content"] = read_md(file_path)
-    elif filename.endswith(".html"):
-        entry["content"] = read_html(file_path)
-    elif filename.endswith(".pdf"):
-        entry["content"] = read_pdf(file_path)
-    elif filename.endswith(".docx"):
-        entry["content"] = read_docx(file_path)
+        # Format the final HTML page
+        formatted_html = html_template.format(
+            title=filename,
+            header="Political Journal Entry",
+            content=cleaned_text,
+            footer_date=datetime.now().strftime("%B %d, %Y")
+        )
 
-    entries.append(entry)
+        # Save as an HTML file
+        with open(output_file, "w", encoding="utf-8") as f:
+            f.write(formatted_html)
 
-# Save to JSON
-with open(output_file, "w", encoding="utf-8") as f:
-    json.dump(entries, f, indent=4, ensure_ascii=False)
+        print(f"Processed: {filename} -> {output_file}")
 
-print("✅ Entries JSON generated successfully!")
+# Run the script
+if __name__ == "__main__":
+    process_journal_entries()
