@@ -1,0 +1,12 @@
+[
+    {
+        "title": "Day 1: New Beginnings",
+        "filename": "day1.html",
+        "content": "<p>Today was a great start...</p>"
+    },
+    {
+        "title": "Day 2: Learning Python",
+        "filename": "day2.html",
+        "content": "<p>I started learning Python today...</p>"
+    }
+]
