@@ -3,58 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Journal Entry</title>
+    <title>Entry</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; background-color: var(--bg-color, #fff); color: var(--text-color, #000); }
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; }
         h1 { text-align: center; }
-        .content { margin-top: 20px; }
-        .back { display: block; margin-top: 20px; text-align: center; }
-        .dark-mode { --bg-color: #121212; --text-color: #ffffff; }
-        .toggle-container { text-align: right; }
-        button { padding: 5px 10px; cursor: pointer; }
+        p { font-size: 18px; }
+        .back-link { display: block; margin-top: 20px; text-align: center; }
     </style>
 </head>
 <body>
-    <div class="toggle-container">
-        <button onclick="toggleDarkMode()">🌙 Dark Mode</button>
-    </div>
-    <h1 id="entry-title">Loading...</h1>
-    <div class="content" id="entry-content">Loading...</div>
-    <p><strong>Category:</strong> <span id="entry-category"></span></p>
-    <a class="back" href="index.html">⬅️ Back to Journal</a>
+    <h1 id="entryTitle">Loading...</h1>
+    <p id="entryContent"></p>
+    <a href="index.html" class="back-link">⬅ Back to Journal</a>
 
     <script>
-        async function loadEntry() {
-            const params = new URLSearchParams(window.location.search);
-            const entryId = params.get("id");
+        fetch("entries.json")
+            .then(response => response.json())
+            .then(entries => {
+                let urlParams = new URLSearchParams(window.location.search);
+                let entryFile = urlParams.get("entry");
 
-            if (!entryId) {
-                document.getElementById("entry-title").innerText = "Entry not found";
-                return;
-            }
-
-            try {
-                const response = await fetch('entries.json');
-                const entries = await response.json();
-                const entry = entries.find(e => e.id === entryId);
+                let entry = entries.find(e => e.file === entryFile);
 
                 if (entry) {
-                    document.getElementById("entry-title").innerText = entry.title;
-                    document.getElementById("entry-content").innerText = entry.content;
-                    document.getElementById("entry-category").innerText = entry.category || "Uncategorized";
+                    document.title = entry.title;
+                    document.getElementById("entryTitle").innerText = entry.title;
+                    
+                    fetch(entry.file)
+                        .then(response => response.text())
+                        .then(content => {
+                            document.getElementById("entryContent").innerHTML = content;
+                        })
+                        .catch(() => {
+                            document.getElementById("entryContent").innerText = "Error loading content.";
+                        });
+
                 } else {
-                    document.getElementById("entry-title").innerText = "Entry not found";
+                    document.body.innerHTML = "<h1>Entry not found</h1><a href='index.html' class='back-link'>⬅ Back to Journal</a>";
                 }
-            } catch (error) {
-                console.error("Failed to load journal entry:", error);
-            }
-        }
-
-        function toggleDarkMode() {
-            document.body.classList.toggle("dark-mode");
-        }
-
-        loadEntry();
+            })
+            .catch(() => {
+                document.body.innerHTML = "<h1>Error loading journal</h1><a href='index.html' class='back-link'>⬅ Back to Journal</a>";
+            });
     </script>
 </body>
 </html>
