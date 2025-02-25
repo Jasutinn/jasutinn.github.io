@@ -111,7 +111,7 @@ def process_journal_entries():
         
         elif filename.endswith(".docx"):
             raw_text = extract_text_from_docx(file_path)
-            formatted_text = f"<p>{raw_text.replace('\n', '</p><p>')}</p>"
+            formatted_text = "<p>" + raw_text.replace("\n", "</p><p>") + "</p>"
         
         else:
             print(f"Skipping unsupported file: {filename}")
