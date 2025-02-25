@@ -3,52 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Justine's Journal</title>
+    <title>My Journal</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; padding: 20px; background-color: var(--bg-color, #fff); color: var(--text-color, #000); }
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; }
         h1 { text-align: center; }
-        .entry-list { list-style: none; padding: 0; }
-        .entry-item { padding: 15px; border-bottom: 1px solid #ddd; }
-        .entry-item a { text-decoration: none; color: #007bff; font-weight: bold; }
-        .entry-item a:hover { text-decoration: underline; }
-        .dark-mode { --bg-color: #121212; --text-color: #ffffff; }
-        .toggle-container { text-align: right; margin-bottom: 10px; }
-        button { padding: 5px 10px; cursor: pointer; }
+        ul { list-style: none; padding: 0; }
+        li { margin: 10px 0; }
+        a { text-decoration: none; color: #007bff; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="toggle-container">
-        <button onclick="toggleDarkMode()">🌙 Dark Mode</button>
-    </div>
-    <h1>My Daily Journal</h1>
-    
-    <ul class="entry-list" id="journal-entries">Loading...</ul>
+    <h1>My Journal</h1>
+    <ul id="journalList">Loading...</ul>
 
     <script>
-        async function loadEntries() {
-            try {
-                const response = await fetch('entries.json');
-                const entries = await response.json();
-                const container = document.getElementById("journal-entries");
-                container.innerHTML = "";
+        fetch("entries.json")
+            .then(response => response.json())
+            .then(entries => {
+                let list = document.getElementById("journalList");
+                list.innerHTML = "";
 
                 entries.forEach(entry => {
-                    const li = document.createElement("li");
-                    li.className = "entry-item";
-                    li.innerHTML = `<a href="entry.html?id=${entry.id}">${entry.date} - ${entry.title}</a>`;
-                    container.appendChild(li);
+                    let listItem = document.createElement("li");
+                    listItem.innerHTML = `<a href="entry.html?entry=${entry.file}">${entry.title} - ${entry.date}</a>`;
+                    list.appendChild(listItem);
                 });
-            } catch (error) {
-                console.error("Failed to load journal entries:", error);
-                document.getElementById("journal-entries").innerHTML = "Failed to load journal entries.";
-            }
-        }
-
-        function toggleDarkMode() {
-            document.body.classList.toggle("dark-mode");
-        }
-
-        loadEntries();
+            })
+            .catch(error => {
+                document.getElementById("journalList").innerText = "Error loading journal entries.";
+            });
     </script>
 </body>
 </html>
