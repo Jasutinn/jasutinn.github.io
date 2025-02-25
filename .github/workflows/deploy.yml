@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - default  # Replace with your default branch name if needed
+      - default  # Replace with your actual default branch name
   workflow_dispatch:
 
 jobs:
@@ -26,16 +26,23 @@ jobs:
       - name: Run Python Script
         run: python generate_entries.py
 
-      - name: Commit and Push Changes
+      - name: Create Public Folder (if missing)
+        run: mkdir -p public
+
+      - name: Move Journal Entries to Public
+        run: cp -r journal/* public/
+
+      - name: Commit and Push Changes to gh-pages
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
-          git add journal/entries.json
-          git commit -m "Auto-update journal entries" || echo "No changes to commit"
-          git push
+          git add .
+          git commit -m "Deploy site updates" || echo "No changes to commit"
+          git push origin gh-pages --force
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public  # Make sure this matches your output directory
+          publish_branch: gh-pages
+          publish_dir: ./public
