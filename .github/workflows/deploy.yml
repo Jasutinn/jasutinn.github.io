@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - default  # Replace with your default branch name
+      - default  # Replace with your actual default branch (e.g., main)
   workflow_dispatch:
 
 jobs:
@@ -23,20 +23,19 @@ jobs:
         run: |
           pip install markdown pdfplumber beautifulsoup4 python-docx
 
-      - name: Run Python Script
+      - name: Run Python Script to Generate Entries
         run: python generate_entries.py
 
       - name: Create Public Folder (if missing)
         run: mkdir -p public
 
       - name: Move Journal Entries to Public
-        run: cp -r journal/* public/ || echo "No journal files to move"
-
-      - name: Create a Basic index.html (if missing)
         run: |
-          if [ ! -f public/index.html ]; then
-            echo "<html><head><title>My Journal</title></head><body><h1>Welcome to My Journal</h1></body></html>" > public/index.html
-          fi
+          mkdir -p public/journal
+          cp -r journal/* public/journal/ || echo "No journal files to move"
+
+      - name: Debug: List Public Directory
+        run: ls -R public/
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
