@@ -40,7 +40,7 @@ jobs:
           <head>
               <meta charset="UTF-8">
               <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <title>Political Journal</title>
+              <title>Political Memoranda</title>
               <style>
                   body {
                       font-family: "Times New Roman", serif;
@@ -80,9 +80,9 @@ jobs:
               </style>
           </head>
           <body>
-              <header>Political Journal</header>
+              <header>Political Memoranda</header>
               <article>
-                  <h2>Welcome to My Political Journal</h2>
+                  <h2>Official Archives and Memoranda</h2>
                   <p>This is a collection of my political thoughts, legal insights, and journal entries related to governance, law, and human rights.</p>
                   <p>Browse the latest entries below:</p>
                   <ul>
