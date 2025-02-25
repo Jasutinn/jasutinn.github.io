@@ -1,15 +1,23 @@
-- name: Set up Python
-  uses: actions/setup-python@v4
-  with:
-    python-version: '3.x'
+name: Deploy to GitHub Pages
 
-- name: Convert journal entries to HTML
-  run: python scripts/convert_journal.py
+on:
+  push:
+    branches:
+      - default
+  workflow_dispatch:
 
-- name: Commit converted HTML files
-  run: |
-    git config --global user.name "github-actions"
-    git config --global user.email "github-actions@github.com"
-    git add journal/*.html
-    git commit -m "Convert journal entries to HTML"
-    git push
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Push to gh-pages
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git checkout gh-pages
+          git merge default
+          git push origin gh-pages
