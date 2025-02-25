@@ -7,9 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 jobs:
   deploy:
@@ -19,18 +17,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-
       - name: Build site
         run: |
           npm install  # Install dependencies if needed
           npm run build  # Adjust if you use another build command
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./dist  # Change this to your build output directory
-
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+      - name: Deploy to gh-pages branch
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan gh-pages
+          git rm -rf .
+          cp -r ./dist/* .  # Change `dist` if your build outputs elsewhere
+          git add .
+          git commit -m "Deploy site"
+          git push -f origin gh-pages
