@@ -65,7 +65,7 @@ html_template = """<!DOCTYPE html>
     <article>
         {content}
     </article>
-    <footer>Political Journal - {footer_date}</footer>
+    <footer>Political Memoranda - {footer_date}</footer>
 </body>
 </html>
 """
@@ -129,7 +129,7 @@ def process_journal_entries():
         # Format the final HTML page
         formatted_html = html_template.format(
             title=filename,
-            header="Political Journal Entry",
+            header="Political Memoranda",
             content=cleaned_text,
             footer_date=datetime.now().strftime("%B %d, %Y")
         )
