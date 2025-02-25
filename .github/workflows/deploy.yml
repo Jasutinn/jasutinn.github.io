@@ -3,11 +3,8 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - default  # Change this if your default branch has a different name
+      - default  # Replace with your default branch name
   workflow_dispatch:
-
-permissions:
-  contents: write
 
 jobs:
   deploy:
@@ -15,23 +12,35 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: "3.x"
 
       - name: Install Dependencies
         run: |
           pip install markdown pdfplumber beautifulsoup4 python-docx
 
       - name: Run Python Script
-        run: python generate_entries.py  # Ensure this script exists and works properly
+        run: python generate_entries.py
+
+      - name: Create Public Folder (if missing)
+        run: mkdir -p public
+
+      - name: Move Journal Entries to Public
+        run: cp -r journal/* public/ || echo "No journal files to move"
+
+      - name: Create a Basic index.html (if missing)
+        run: |
+          if [ ! -f public/index.html ]; then
+            echo "<html><head><title>My Journal</title></head><body><h1>Welcome to My Journal</h1></body></html>" > public/index.html
+          fi
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
-          publish_dir: ./public  # Ensure this is the correct output directory
+          publish_dir: ./public
