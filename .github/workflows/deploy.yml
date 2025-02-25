@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - default  # Your main branch is named 'default'
+      - default  # Ensure this is the actual name of your main branch
   workflow_dispatch:
 
 jobs:
