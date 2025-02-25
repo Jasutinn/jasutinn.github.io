@@ -30,7 +30,11 @@ jobs:
         run: mkdir -p public
 
       - name: Move Journal Entries to Public
-        run: cp -r journal/* public/
+        run: cp -r journal/* public/ || echo "No journal files to move"
+
+      - name: Create a Basic index.html (if missing)
+        run: |
+          echo "<html><head><title>My Journal</title></head><body><h1>Welcome to My Journal</h1></body></html>" > public/index.html
 
       - name: Commit and Push Changes to gh-pages
         run: |
