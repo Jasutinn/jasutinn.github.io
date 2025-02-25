@@ -72,22 +72,27 @@ html_template = """<!DOCTYPE html>
 
 # Function to convert Markdown to HTML
 def convert_md_to_html(md_text):
-    html = markdown.markdown(md_text)
-    return html
+    return markdown.markdown(md_text)
 
 # Function to extract text from PDFs
 def extract_text_from_pdf(pdf_path):
     text = ""
     with pdfplumber.open(pdf_path) as pdf:
         for page in pdf.pages:
-            text += page.extract_text() + "\n"
+            extracted_text = page.extract_text()
+            if extracted_text:
+                text += extracted_text + "\n"
     return text
 
 # Function to extract text from DOCX files
 def extract_text_from_docx(docx_path):
     doc = docx.Document(docx_path)
-    text = "\n".join([para.text for para in doc.paragraphs])
-    return text
+    return "\n".join(para.text for para in doc.paragraphs)
+
+# Function to format plain text to HTML
+def format_text_as_html(text):
+    """Ensure proper HTML formatting with paragraphs."""
+    return "<p>" + text.replace("\n", "</p><p>") + "</p>"
 
 # Function to process and convert all journal entries
 def process_journal_entries():
@@ -103,15 +108,15 @@ def process_journal_entries():
         elif filename.endswith(".txt"):
             with open(file_path, "r", encoding="utf-8") as f:
                 raw_text = f.read()
-                formatted_text = f"<p>{raw_text.replace('\n', '</p><p>')}</p>"
+                formatted_text = format_text_as_html(raw_text)
         
         elif filename.endswith(".pdf"):
             raw_text = extract_text_from_pdf(file_path)
-            formatted_text = f"<p>{raw_text.replace('\n', '</p><p>')}</p>"
+            formatted_text = format_text_as_html(raw_text)
         
         elif filename.endswith(".docx"):
             raw_text = extract_text_from_docx(file_path)
-            formatted_text = "<p>" + raw_text.replace("\n", "</p><p>") + "</p>"
+            formatted_text = format_text_as_html(raw_text)
         
         else:
             print(f"Skipping unsupported file: {filename}")
@@ -119,7 +124,7 @@ def process_journal_entries():
 
         # Clean up using BeautifulSoup
         soup = BeautifulSoup(formatted_text, "html.parser")
-        cleaned_text = str(soup.prettify())
+        cleaned_text = soup.prettify()
 
         # Format the final HTML page
         formatted_html = html_template.format(
