@@ -1,57 +1,70 @@
 import os
 import json
 import markdown
+import pdfplumber
+from bs4 import BeautifulSoup
+from docx import Document
 
-# Paths
-journal = "journal"
-entries_file = os.path.join(journal, "entries.json")
-css_file = "style.css"  # Global CSS file
+# Directory containing journal entries
+journal_dir = "journal"
+output_file = os.path.join(journal_dir, "entries.json")
 
-entries = []  # Start fresh every time
+# Function to read .txt files
+def read_txt(file_path):
+    with open(file_path, "r", encoding="utf-8") as f:
+        return f.read()
 
-# Scan the journal folder for .md files
-for filename in os.listdir(journal):
-    if filename.endswith(".md", ".*"):  # Only process markdown files
-        filepath = os.path.join(journal, filename)
-        
-        # Read the Markdown file
-        with open(filepath, "r", encoding="utf-8") as f:
-            md_content = f.read()
+# Function to read .md files and convert to HTML
+def read_md(file_path):
+    with open(file_path, "r", encoding="utf-8") as f:
+        return markdown.markdown(f.read())
 
-        # Convert Markdown to HTML
-        html_content = markdown.markdown(md_content)
+# Function to read .html files
+def read_html(file_path):
+    with open(file_path, "r", encoding="utf-8") as f:
+        return f.read()  # No need to convert, already HTML
 
-        # Generate HTML filename
-        html_filename = filename.rsplit(".", 1)[0] + ".html"
-        html_filepath = os.path.join(journal, html_filename)
+# Function to read .pdf files
+def read_pdf(file_path):
+    text = ""
+    with pdfplumber.open(file_path) as pdf:
+        for page in pdf.pages:
+            text += page.extract_text() + "\n"
+    return text.strip()
 
-        # Create the formatted HTML file
-        with open(html_filepath, "w", encoding="utf-8") as f:
-            f.write(f"""
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>{filename.replace('.md', '')}</title>
-                <link rel="stylesheet" href="../{css_file}">
-            </head>
-            <body>
-                <div class="blog-container">
-                    <h1>{filename.replace('.md', '')}</h1>
-                    <div class="blog-content">
-                        {html_content}
-                    </div>
-                </div>
-            </body>
-            </html>
-            """)
+# Function to read .docx (Word) files
+def read_docx(file_path):
+    doc = Document(file_path)
+    text = "\n".join([para.text for para in doc.paragraphs])
+    return text
 
-        # Add the new entry to the JSON list
-        entries.append({"title": filename.replace(".md", ""), "file": html_filename})
+# Process files
+entries = []
+if not os.path.exists(journal_dir):
+    os.makedirs(journal_dir)
 
-# Overwrite entries.json with the updated list
-with open(entries_file, "w", encoding="utf-8") as f:
-    json.dump(entries, f, indent=4)
+for filename in os.listdir(journal_dir):
+    if filename == "entries.json":
+        continue  # Skip the JSON file itself
 
-print("Journal entries successfully updated!")
+    file_path = os.path.join(journal_dir, filename)
+    entry = {"title": filename, "content": ""}
+
+    if filename.endswith(".txt"):
+        entry["content"] = read_txt(file_path)
+    elif filename.endswith(".md"):
+        entry["content"] = read_md(file_path)
+    elif filename.endswith(".html"):
+        entry["content"] = read_html(file_path)
+    elif filename.endswith(".pdf"):
+        entry["content"] = read_pdf(file_path)
+    elif filename.endswith(".docx"):
+        entry["content"] = read_docx(file_path)
+
+    entries.append(entry)
+
+# Save to JSON
+with open(output_file, "w", encoding="utf-8") as f:
+    json.dump(entries, f, indent=4, ensure_ascii=False)
+
+print("✅ Entries JSON generated successfully!")
