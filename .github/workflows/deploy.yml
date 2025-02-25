@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - default  # Use "default" instead of "main"
+      - default  # Change this if your branch name is different
   workflow_dispatch:
 
 jobs:
@@ -20,7 +20,7 @@ jobs:
           python-version: "3.x"
 
       - name: Install Dependencies
-        run: pip install markdown  # Fix missing module error
+        run: pip install markdown pdfplumber beautifulsoup4 python-docx
 
       - name: Run Python Script
         run: python generate_entries.py
@@ -37,4 +37,4 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public  # Adjust this to your build output directory
+          publish_dir: ./public  # Adjust this if your build output is different
