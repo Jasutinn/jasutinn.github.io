@@ -1,30 +1,14 @@
 [
     {
-        "id": "entry-2025-02-25",
-        "date": "February 25, 2025",
-        "title": "My First Entry",
-        "content": "Ngayon ay napaka-productive kong araw! Nag-set up ako ng journal ko sa GitHub Pages.",
-        "category": "Personal"
+        "title": "My First Journal",
+        "date": "2025-02-25",
+        "category": "Personal",
+        "file": "journal-2025-02-25.html"
     },
     {
-        "id": "entry-2025-02-26",
-        "date": "February 26, 2025",
         "title": "Another Day",
-        "content": "Medyo busy ako ngayon, pero okay lang. Naisip ko na magdagdag ng CSS para gumanda ang layout.",
-        "category": "Work"
-    },
-    {
-        "id": "entry-2025-02-27",
-        "date": "February 27, 2025",
-        "title": "Today's Thoughts",
-        "content": "Napakaraming nangyari ngayong araw. Masaya akong natapos ko ang isang proyekto!",
-        "category": "Personal"
-    },
-    {
-        "id": "entry-2025-02-28",
-        "date": "February 28, 2025",
-        "title": "A Productive Day",
-        "content": "Sinubukan kong mag-aral ng bagong tech today. Medyo mahirap pero exciting!",
-        "category": "Learning"
+        "date": "2025-02-26",
+        "category": "Work",
+        "file": "journal-2025-02-26.html"
     }
 ]
