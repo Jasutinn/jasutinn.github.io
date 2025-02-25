@@ -1,48 +1,38 @@
 import os
 import json
-from docx import Document
+from bs4 import BeautifulSoup
 
-JOURNAL_FOLDER = "journal"
-ENTRIES_FILE = "entries.json"
+# Directory containing journal entries
+journal_dir = "./journal"
 
-def convert_to_html(filename, content):
-    html_content = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{filename}</title>
-</head>
-<body>
-    <h1>{filename}</h1>
-    <p>{content.replace('\n', '<br>')}</p>
-</body>
-</html>"""
-    
-    with open(f"{JOURNAL_FOLDER}/{filename}.html", "w", encoding="utf-8") as f:
-        f.write(html_content)
+# Output JSON file
+output_file = "entries.json"
 
-def process_files():
-    entries = []
-    for file in os.listdir(JOURNAL_FOLDER):
-        filepath = os.path.join(JOURNAL_FOLDER, file)
-        filename, ext = os.path.splitext(file)
-        
-        if ext == ".txt":
-            with open(filepath, "r", encoding="utf-8") as f:
-                content = f.read()
-            convert_to_html(filename, content)
+# List to store journal data
+entries = []
 
-        elif ext == ".docx":
-            doc = Document(filepath)
-            content = "\n".join([para.text for para in doc.paragraphs])
-            convert_to_html(filename, content)
-        
-        if ext in [".txt", ".docx"]:
-            entries.append(filename)
+# Ensure the directory exists
+if not os.path.exists(journal_dir):
+    os.makedirs(journal_dir)
 
-    with open(ENTRIES_FILE, "w", encoding="utf-8") as f:
-        json.dump(entries, f)
+# Loop through HTML files in the directory
+for filename in os.listdir(journal_dir):
+    if filename.endswith(".html"):
+        filepath = os.path.join(journal_dir, filename)
 
-if __name__ == "__main__":
-    process_files()
+        with open(filepath, "r", encoding="utf-8") as file:
+            soup = BeautifulSoup(file, "html.parser")
+            title = soup.title.string if soup.title else filename
+            content = soup.body.prettify() if soup.body else ""
+
+            entries.append({
+                "title": title,
+                "filename": filename,
+                "content": content
+            })
+
+# Save entries to JSON
+with open(output_file, "w", encoding="utf-8") as json_file:
+    json.dump(entries, json_file, indent=4, ensure_ascii=False)
+
+print(f"Converted {len(entries)} journal entries to JSON.")
