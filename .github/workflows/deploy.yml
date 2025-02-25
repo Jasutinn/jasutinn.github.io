@@ -1,34 +1,15 @@
-name: Deploy to GitHub Pages
+- name: Set up Python
+  uses: actions/setup-python@v4
+  with:
+    python-version: '3.x'
 
-on:
-  push:
-    branches:
-      - main  # Trigger on push to the default branch
-  workflow_dispatch:
+- name: Convert journal entries to HTML
+  run: python scripts/convert_journal.py
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '14'  # Specify the Node.js version you need
-
-      - name: Install dependencies
-        run: npm install  # Adjust if you're using yarn or another package manager
-
-      - name: Build the site
-        run: npm run build  # Adjust to your build script
-
-      - name: Deploy to GitHub Pages
-        run: |
-          git config --global user.name "${{ github.actor }}"
-          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
-          git add -A
-          git commit -m "Deploy updates"
-          git push origin `git subtree split --prefix dist main`:gh-pages --force
+- name: Commit converted HTML files
+  run: |
+    git config --global user.name "github-actions"
+    git config --global user.email "github-actions@github.com"
+    git add journal/*.html
+    git commit -m "Convert journal entries to HTML"
+    git push
