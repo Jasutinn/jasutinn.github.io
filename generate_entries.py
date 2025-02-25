@@ -3,16 +3,16 @@ import json
 import markdown
 
 # Paths
-journal_folder = "journal"
-entries_file = os.path.join(journal_folder, "entries.json")
+journal = "journal"
+entries_file = os.path.join(journal, "entries.json")
 css_file = "style.css"  # Global CSS file
 
 entries = []  # Start fresh every time
 
 # Scan the journal folder for .md files
-for filename in os.listdir(journal_folder):
-    if filename.endswith(".md"):  # Only process markdown files
-        filepath = os.path.join(journal_folder, filename)
+for filename in os.listdir(journal):
+    if filename.endswith(".md", ".*"):  # Only process markdown files
+        filepath = os.path.join(journal, filename)
         
         # Read the Markdown file
         with open(filepath, "r", encoding="utf-8") as f:
@@ -23,7 +23,7 @@ for filename in os.listdir(journal_folder):
 
         # Generate HTML filename
         html_filename = filename.rsplit(".", 1)[0] + ".html"
-        html_filepath = os.path.join(journal_folder, html_filename)
+        html_filepath = os.path.join(journal, html_filename)
 
         # Create the formatted HTML file
         with open(html_filepath, "w", encoding="utf-8") as f:
