@@ -1,29 +1,51 @@
-name: Emergency Design Recovery
+name: Guaranteed Site Deployment
 
 on:
   push:
     branches: [default]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 5
+    
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Set up Python Environment
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
+          cache: 'pip'
+          
+      - name: Install System Requirements
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1 libgomp1 libxcb-xinerama0
+          
+      - name: Install Python Packages
+        run: |
+          pip install --upgrade pip
+          pip install markdown pdfplumber python-docx beautifulsoup4
 
-      - run: |
-          pip install markdown pdfplumber python-docx
+      - name: Generate Site Content
+        run: |
+          rm -rf public
           python generate_entries.py
+          echo "Generated files structure:"
+          tree public
 
-      - name: Deploy
+      - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: ./public
           force_orphan: true
+          keep_files: false
+          enable_jekyll: false
