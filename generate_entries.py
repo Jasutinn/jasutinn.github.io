@@ -1,4 +1,5 @@
 import os
+import string  # ← REQUIRED IMPORT ADDED HERE
 import sys
 import markdown
 import pdfplumber
@@ -7,64 +8,62 @@ import logging
 import shutil
 from datetime import datetime
 from pathlib import Path
-from bs4 import BeautifulSoup
 
-# ===== CONFIGURATION =====
+# ===== CONSTANTS =====
 JOURNAL_DIR = Path("journal")
 PUBLIC_DIR = Path("public")
 OUTPUT_DIR = PUBLIC_DIR / "journal"
 ALLOWED_EXT = {'.md', '.docx', '.pdf', '.txt'}
-SAFE_CHARS = set(" -_.()%s%s" % (string.ascii_letters, string.digits))
+SITE_TITLE = "Political Memoranda"
+
+# ===== SAFE CHARACTER SET =====
+SAFE_CHARS = set(f" -_.(){string.ascii_letters}{string.digits}")  # ← FIXED LINE
 
 # ===== LOGGING =====
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
+    format='%(levelname)s: %(message)s',
     handlers=[
-        logging.FileHandler('generator.log'),
+        logging.FileHandler('build.log'),
         logging.StreamHandler()
     ]
 )
 
 def sanitize_filename(name: str) -> str:
-    """Convert to safe web filename"""
-    clean = ''.join(c if c in SAFE_CHARS else '_' for c in name)
-    return clean.strip('_')
+    """Convert to web-safe filename"""
+    return "".join(c if c in SAFE_CHARS else '_' for c in name).strip('_')
 
-def process_file(file_path: Path) -> bool:
+def process_entry(file_path: Path) -> bool:
     """Process individual entry file"""
     try:
         if file_path.suffix.lower() not in ALLOWED_EXT:
             return False
 
-        # Generate clean filename
         clean_name = sanitize_filename(file_path.stem)
         output_path = OUTPUT_DIR / f"{clean_name}.html"
         output_path.parent.mkdir(parents=True, exist_ok=True)
 
-        # Read content
-        content = ""
+        # Content processing
         if file_path.suffix == '.md':
             content = markdown.markdown(file_path.read_text())
         elif file_path.suffix == '.docx':
             doc = docx.Document(file_path)
-            content = '\n'.join(p.text for p in doc.paragraphs)
+            content = "\n".join(p.text for p in doc.paragraphs)
         elif file_path.suffix == '.pdf':
             with pdfplumber.open(file_path) as pdf:
-                content = '\n'.join(page.extract_text() for page in pdf.pages)
+                content = "\n".join(page.extract_text() for page in pdf.pages)
         else:
             content = file_path.read_text()
 
-        # Generate HTML
+        # HTML template
         html = f"""<!DOCTYPE html>
         <html>
         <head>
             <meta charset="UTF-8">
             <title>{clean_name.replace('_', ' ').title()}</title>
-            <meta name="generated" content="{datetime.now().isoformat()}">
             <style>
                 body {{ 
-                    font-family: Georgia, serif;
+                    font-family: 'Times New Roman', serif;
                     line-height: 1.8;
                     max-width: 680px;
                     margin: 2rem auto;
@@ -78,7 +77,7 @@ def process_file(file_path: Path) -> bool:
         <body>
             <h1>{clean_name.replace('_', ' ').title()}</h1>
             <div class="content">{content}</div>
-            <footer>Generated: {datetime.now().strftime('%Y-%m-%d')}</footer>
+            <footer>{SITE_TITLE} - {datetime.now().strftime('%Y-%m-%d')}</footer>
         </body>
         </html>
         """
@@ -95,33 +94,33 @@ def generate_index():
     try:
         entries = sorted(
             [f.stem for f in OUTPUT_DIR.glob('*.html')],
-            key=lambda x: x.lower()
+            key=lambda x: x.lower(),
+            reverse=True
         )
         
         index_html = f"""<!DOCTYPE html>
         <html>
         <head>
             <meta charset="UTF-8">
-            <title>Political Memoranda</title>
+            <title>{SITE_TITLE}</title>
             <style>
                 body {{ 
-                    font-family: Georgia, serif;
+                    font-family: 'Times New Roman', serif;
                     line-height: 1.8;
                     max-width: 680px;
                     margin: 2rem auto;
                     padding: 0 1rem;
                 }}
                 h1 {{ color: #00274D; border-bottom: 2px solid #00274D; }}
-                ul {{ list-style: none; padding: 0; }}
-                li {{ margin: 1rem 0; padding-left: 1rem; border-left: 3px solid #8B0000; }}
-                a {{ color: #00274D; text-decoration: none; }}
-                a:hover {{ text-decoration: underline; }}
+                .entry-list {{ list-style: none; padding: 0; }}
+                .entry-item {{ margin: 1.2rem 0; padding-left: 1rem; }}
+                .entry-link {{ color: #00274D; text-decoration: none; }}
             </style>
         </head>
         <body>
-            <h1>Political Memoranda</h1>
-            <ul>
-                {"".join(f'<li><a href="journal/{e}.html">{e.replace("_", " ").title()}</a></li>' for e in entries)}
+            <h1>{SITE_TITLE}</h1>
+            <ul class="entry-list">
+                {"".join(f'<li class="entry-item"><a class="entry-link" href="journal/{e}.html">{e.replace("_", " ").title()}</a></li>' for e in entries)}
             </ul>
         </body>
         </html>
@@ -137,27 +136,22 @@ def generate_index():
 def main():
     """Main execution flow"""
     try:
-        # Clean previous build
         shutil.rmtree(PUBLIC_DIR, ignore_errors=True)
-        OUTPUT_DIR.mkdir(parents=True)
-        
-        # Process entries
+        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
         success_count = 0
         for entry in JOURNAL_DIR.iterdir():
-            if entry.is_file() and process_file(entry):
+            if entry.is_file() and process_entry(entry):
                 success_count += 1
-                
+
         if success_count == 0:
             logging.error("No valid entries processed!")
             sys.exit(1)
-            
-        # Generate index
+
         generate_index()
-        logging.info("Site built successfully")
-        
-        # Create .nojekyll to bypass GitHub processing
         (PUBLIC_DIR / '.nojekyll').touch()
-        
+        logging.info("Deployment package ready")
+
     except Exception as e:
         logging.critical(f"Fatal error: {str(e)}")
         sys.exit(1)
