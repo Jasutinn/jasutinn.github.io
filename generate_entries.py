@@ -16,47 +16,32 @@ OUTPUT_DIR = PUBLIC_DIR / "journal"
 ALLOWED_EXT = {'.md', '.docx', '.pdf', '.txt'}
 SITE_TITLE = "Political Memoranda"
 
-# ===== UNIVERSAL STYLES WITH DARK MODE =====
-BASE_CSS = """
+# ===== UNIVERSAL STYLES =====
+SHARED_CSS = """
 <style>
     :root {
         --primary: #00274D;
         --accent: #8B0000;
-        --text: #333333;
-        --background: #FFFFFF;
-        --border: #DDDDDD;
-    }
-
-    @media (prefers-color-scheme: dark) {
-        :root {
-            --text: #EEEEEE;
-            --background: #121212;
-            --border: #333333;
-        }
+        --text: #333;
+        --background: #fff;
+        --border: #ddd;
     }
 
     [data-theme="dark"] {
-        --text: #EEEEEE;
+        --text: #eee;
         --background: #121212;
-        --border: #333333;
-    }
-
-    [data-theme="light"] {
-        --text: #333333;
-        --background: #FFFFFF;
-        --border: #DDDDDD;
+        --border: #333;
     }
 
     body {
         font-family: 'Times New Roman', serif;
         line-height: 1.6;
-        max-width: 90rem;
+        max-width: 800px;
         margin: 2rem auto;
-        padding: 0 5vw;
+        padding: 0 1rem;
         color: var(--text);
-        background-color: var(--background);
-        font-size: clamp(1rem, 2vw, 1.25rem);
-        transition: background-color 0.3s, color 0.3s;
+        background: var(--background);
+        transition: all 0.3s ease;
     }
 
     header {
@@ -67,20 +52,15 @@ BASE_CSS = """
     }
 
     h1 {
+        font-size: 2rem;
         color: var(--primary);
-        font-size: clamp(2rem, 5vw, 3rem);
         margin: 0 0 1rem 0;
-    }
-
-    h2 {
-        font-size: clamp(1.5rem, 3vw, 2rem);
-        margin: 2rem 0 1rem;
     }
 
     .content {
         margin: 2rem 0;
         text-align: justify;
-        max-width: 65ch;
+        font-size: 1.1rem;
     }
 
     footer {
@@ -96,19 +76,22 @@ BASE_CSS = """
         position: fixed;
         bottom: 1rem;
         right: 1rem;
-        padding: 0.5rem;
-        border-radius: 50%;
         background: var(--primary);
         color: white;
-        cursor: pointer;
         border: none;
+        border-radius: 50%;
         width: 40px;
         height: 40px;
+        cursor: pointer;
     }
 
     @media (min-width: 768px) {
         body {
-            padding: 0 10vw;
+            padding: 0 2rem;
+            font-size: 1.1rem;
+        }
+        h1 {
+            font-size: 2.5rem;
         }
     }
 </style>
@@ -116,32 +99,47 @@ BASE_CSS = """
 
 THEME_SCRIPT = """
 <script>
-    function setTheme(theme) {
-        document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-    }
+    // Theme management
+    const getStoredTheme = () => localStorage.getItem('theme');
+    const setStoredTheme = theme => localStorage.setItem('theme', theme);
 
-    function toggleTheme() {
-        const current = localStorage.getItem('theme') || 
-            (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-        setTheme(current === 'dark' ? 'light' : 'dark');
-    }
+    const getSystemTheme = () => {
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) 
+            return 'dark';
+        return 'light';
+    };
+
+    const applyTheme = theme => {
+        document.documentElement.setAttribute('data-theme', theme);
+    };
 
     // Initialize theme
-    const savedTheme = localStorage.getItem('theme');
-    const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const initialTheme = savedTheme || (systemDark ? 'dark' : 'light');
-    setTheme(initialTheme);
+    const initTheme = () => {
+        const storedTheme = getStoredTheme();
+        const systemTheme = getSystemTheme();
+        applyTheme(storedTheme || systemTheme);
+    };
+
+    // Toggle theme
+    const toggleTheme = () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        setStoredTheme(newTheme);
+        applyTheme(newTheme);
+    };
+
+    // Initialize on load
+    window.addEventListener('DOMContentLoaded', initTheme);
 </script>
 """
 
 def sanitize_filename(name: str) -> str:
     """Create web-safe filenames"""
-    valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
+    valid_chars = f"-_.() {string.ascii_letters}{string.digits}"
     return ''.join(c for c in name if c in valid_chars).strip().replace(' ', '-')
 
 def process_entry(file_path: Path):
-    """Process individual journal entry"""
+    """Process individual journal entry with unified styling"""
     try:
         if file_path.suffix.lower() not in ALLOWED_EXT:
             return None
@@ -163,19 +161,17 @@ def process_entry(file_path: Path):
             with open(file_path, 'r') as f:
                 content = f.read()
 
-        # Generate HTML
+        # Generate entry HTML with unified design
         html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{base_name.replace('-', ' ').title()}</title>
-    {BASE_CSS}
+    {SHARED_CSS}
 </head>
 <body>
-    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
-        🌓
-    </button>
+    <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
     
     <header>
         <h1>{SITE_TITLE}</h1>
@@ -191,7 +187,7 @@ def process_entry(file_path: Path):
 
     <footer>
         <p>Document generated: {datetime.now().strftime('%Y-%m-%d')}</p>
-        <p>Official archive - All rights reserved</p>
+        <p>Official Archive - All rights reserved</p>
     </footer>
     
     {THEME_SCRIPT}
@@ -207,7 +203,7 @@ def process_entry(file_path: Path):
         return None
 
 def generate_index(entries: list):
-    """Generate archive index"""
+    """Generate main index page with unified styling"""
     try:
         index_html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -215,19 +211,17 @@ def generate_index(entries: list):
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{SITE_TITLE} Archive</title>
-    {BASE_CSS}
+    {SHARED_CSS}
 </head>
 <body>
-    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
-        🌓
-    </button>
+    <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
     
     <header>
         <h1>{SITE_TITLE} Archive</h1>
     </header>
 
     <div class="content">
-        <ul class="entries">
+        <ul>
             {"".join(f'''
             <li>
                 <a href="journal/{e}.html">
@@ -255,14 +249,14 @@ def generate_index(entries: list):
         sys.exit(1)
 
 def main():
-    """Main workflow"""
+    """Main workflow execution"""
     try:
         shutil.rmtree(PUBLIC_DIR, ignore_errors=True)
         OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
         entries = []
         for entry in JOURNAL_DIR.iterdir():
-            if entry.is_file():
+            if entry.is_file() and entry.suffix.lower() in ALLOWED_EXT:
                 result = process_entry(entry)
                 if result:
                     entries.append(result)
