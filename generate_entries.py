@@ -226,9 +226,21 @@ def process_entry(file_path: Path):
         base_name = sanitize_filename(file_path.stem)
         output_path = OUTPUT_DIR / f"{base_name}.html"
 
-        # Content extraction remains same...
+        # Content extraction
+        if file_path.suffix == '.md':
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = markdown.markdown(f.read())
+        elif file_path.suffix == '.docx':
+            doc = docx.Document(file_path)
+            content = "".join(f"<p>{paragraph.text}</p>" for paragraph in doc.paragraphs if paragraph.text)
+        elif file_path.suffix == '.pdf':
+            with pdfplumber.open(file_path) as pdf:
+                content = "".join(f"<p>{page.extract_text()}</p>" for page in pdf.pages if page.extract_text())
+        else:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f"<pre>{f.read()}</pre>"
 
-        # Generate HTML with universal viewport
+        # Generate HTML
         html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -327,4 +339,48 @@ def generate_index(entries: list):
         logging.critical(f"Index generation failed: {str(e)}")
         sys.exit(1)
 
-# Rest of the code remains the same...
+def main():
+    """Main execution workflow"""
+    try:
+        # Clean and create directories
+        if PUBLIC_DIR.exists():
+            shutil.rmtree(PUBLIC_DIR, ignore_errors=True)
+        
+        PUBLIC_DIR.mkdir(parents=True, exist_ok=True, mode=0o755)
+        OUTPUT_DIR.mkdir(parents=True, exist_ok=True, mode=0o755)
+
+        # Verify journal directory exists
+        if not JOURNAL_DIR.exists():
+            raise FileNotFoundError(f"Journal directory {JOURNAL_DIR} not found")
+
+        entries = []
+        for entry in JOURNAL_DIR.iterdir():
+            if entry.is_file() and entry.suffix.lower() in ALLOWED_EXT:
+                result = process_entry(entry)
+                if result:
+                    entries.append(result)
+                    logging.info(f"Processed: {entry.name}")
+
+        # Create empty index if no entries found
+        if not entries:
+            logging.warning("No valid entries found - generating empty index")
+            entries = ["no-entries-found"]
+
+        generate_index(sorted(entries, key=lambda x: x.lower()))
+        (PUBLIC_DIR / '.nojekyll').touch(mode=0o644)
+        logging.info("Build completed successfully")
+
+    except Exception as e:
+        logging.critical(f"Fatal error: {str(e)}")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.FileHandler('build.log'),
+            logging.StreamHandler()
+        ]
+    )
+    main()
