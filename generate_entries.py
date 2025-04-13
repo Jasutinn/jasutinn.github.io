@@ -20,8 +20,8 @@ SITE_TITLE = "Political Memoranda"
 SHARED_CSS = """
 <style>
     :root {
-        --primary: #1A2B4D;    /* Authority Navy */
-        --accent: #7A1F1F;     /* Formal Crimson */
+        --primary: #1A2B4D;
+        --accent: #7A1F1F;
         --text: #333333;
         --background: #FFFFFF;
         --border: #E0E0E0;
@@ -77,13 +77,13 @@ SHARED_CSS = """
         font-size: 1.1rem;
         max-width: var(--line-length);
         margin: 0 auto;
-        text-align: justify;
+        text-align: left; /* Changed from justify */
     }
 
     .content p {
         margin: 1.5rem 0;
         line-height: 1.8;
-        text-indent: 3rem;
+        text-indent: 0; /* Removed paragraph indentation */
     }
 
     footer {
@@ -124,7 +124,6 @@ SHARED_CSS = """
         }
         .content {
             font-size: 1rem;
-            text-indent: 2rem;
         }
     }
 </style>
@@ -247,9 +246,9 @@ def generate_index(entries: list):
         <main class="content">
             <article>
                 <h2>Archival Index</h2>
-                <ul>
+                <ul style="list-style: none; padding-left: 0;">
                     {"".join(f'''
-                    <li style="margin: 1.5rem 0; padding-left: 2rem; border-left: 2px solid var(--primary)">
+                    <li style="margin: 1.5rem 0; padding-left: 0; border-left: none;">
                         <a href="journal/{e}.html" style="text-decoration: none; color: var(--text)">
                             {e.replace('-', ' ').title()}
                         </a>
