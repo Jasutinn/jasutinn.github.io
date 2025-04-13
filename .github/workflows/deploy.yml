@@ -27,7 +27,9 @@ jobs:
           pip install markdown pdfplumber beautifulsoup4 python-docx
 
       - name: Run Python Script
-        run: python generate_entries.py
+        run: |
+          python generate_entries.py
+          [ -d public ] || mkdir public  # Ensure public directory exists
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
