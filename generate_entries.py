@@ -14,14 +14,14 @@ JOURNAL_DIR = Path("journal")
 PUBLIC_DIR = Path("public")
 OUTPUT_DIR = PUBLIC_DIR / "journal"
 ALLOWED_EXT = {'.md', '.docx', '.pdf', '.txt'}
-SITE_TITLE = "Political Memoranda"  # Unified title
+SITE_TITLE = "Political Memoranda"
 
-# ===== ENHANCED DESIGN SYSTEM =====
+# ===== PROFESSIONAL DESIGN SYSTEM =====
 SHARED_CSS = """
 <style>
     :root {
-        --primary: #2B547E;    /* Professional Navy */
-        --accent: #9B3D3D;     /* Warm Accent */
+        --primary: #1A2B4D;    /* Authority Navy */
+        --accent: #7A1F1F;     /* Formal Crimson */
         --text: #333333;
         --background: #FFFFFF;
         --border: #E0E0E0;
@@ -30,11 +30,11 @@ SHARED_CSS = """
     }
 
     [data-theme="dark"] {
-        --text: #F0F0F0;
-        --background: #1A1A1A;
+        --text: #E8E8E8;
+        --background: #0A0A0A;
         --border: #404040;
-        --primary: #4A7BA6;
-        --accent: #B85C5C;
+        --primary: #2B4D7A;
+        --accent: #9B3D3D;
     }
 
     * {
@@ -44,13 +44,13 @@ SHARED_CSS = """
     }
 
     body {
-        font-family: 'Georgia', serif;
+        font-family: 'Times New Roman', serif;
         line-height: 1.7;
         color: var(--text);
         background: var(--background);
-        padding: 2rem 0;
+        padding: 3rem 0;
         min-height: 100vh;
-        transition: all 0.3s ease;
+        transition: background 0.3s ease, color 0.3s ease;
     }
 
     .container {
@@ -62,39 +62,28 @@ SHARED_CSS = """
     header {
         border-bottom: 2px solid var(--primary);
         padding-bottom: 1.5rem;
-        margin-bottom: 2.5rem;
+        margin-bottom: 3rem;
         text-align: center;
     }
 
     h1 {
-        font-size: clamp(2rem, 5vw, 3rem);
+        font-size: 2.5rem;
         color: var(--primary);
-        margin-bottom: 1rem;
-    }
-
-    h2 {
-        font-size: clamp(1.5rem, 3vw, 2rem);
-        color: var(--primary);
-        margin: 2rem 0 1rem;
+        margin: 0 0 1rem 0;
+        font-weight: normal;
     }
 
     .content {
-        font-size: clamp(1rem, 1.8vw, 1.2rem);
+        font-size: 1.1rem;
         max-width: var(--line-length);
         margin: 0 auto;
+        text-align: justify;
     }
 
     .content p {
         margin: 1.5rem 0;
         line-height: 1.8;
-        text-align: justify;
-    }
-
-    .key-findings {
-        background: rgba(var(--primary), 0.05);
-        border-left: 4px solid var(--accent);
-        padding: 1.5rem;
-        margin: 2rem 0;
+        text-indent: 3rem;
     }
 
     footer {
@@ -103,7 +92,8 @@ SHARED_CSS = """
         border-top: 1px solid var(--border);
         text-align: center;
         font-size: 0.9rem;
-        opacity: 0.9;
+        color: var(--text);
+        opacity: 0.8;
     }
 
     .theme-toggle {
@@ -117,18 +107,24 @@ SHARED_CSS = """
         width: 3rem;
         height: 3rem;
         cursor: pointer;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        transition: all 0.3s ease;
+        opacity: 0.9;
+        transition: opacity 0.3s ease;
+    }
+
+    .theme-toggle:hover {
+        opacity: 1;
     }
 
     @media (max-width: 768px) {
         .container {
             padding: 0 1.5rem;
-            width: 100%;
         }
-        .theme-toggle {
-            bottom: 1rem;
-            right: 1rem;
+        h1 {
+            font-size: 2rem;
+        }
+        .content {
+            font-size: 1rem;
+            text-indent: 2rem;
         }
     }
 </style>
@@ -136,29 +132,20 @@ SHARED_CSS = """
 
 THEME_SCRIPT = """
 <script>
-    const theme = {
-        init() {
-            this.loadTheme()
-            window.matchMedia('(prefers-color-scheme: dark)')
-                .addEventListener('change', e => this.loadTheme())
-        },
+    (function() {
+        const storedTheme = localStorage.getItem('theme');
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const initialTheme = storedTheme || (systemDark ? 'dark' : 'light');
         
-        loadTheme() {
-            const saved = localStorage.getItem('theme')
-            const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-            document.documentElement.setAttribute('data-theme', 
-                saved || (systemDark ? 'dark' : 'light'))
-        },
-        
-        toggle() {
-            const current = document.documentElement.getAttribute('data-theme')
-            const newTheme = current === 'dark' ? 'light' : 'dark'
-            localStorage.setItem('theme', newTheme)
-            document.documentElement.setAttribute('data-theme', newTheme)
+        document.documentElement.setAttribute('data-theme', initialTheme);
+
+        window.toggleTheme = function() {
+            const current = document.documentElement.getAttribute('data-theme');
+            const newTheme = current === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('theme', newTheme);
+            document.documentElement.setAttribute('data-theme', newTheme);
         }
-    }
-    
-    document.addEventListener('DOMContentLoaded', () => theme.init())
+    })();
 </script>
 """
 
@@ -168,82 +155,59 @@ def sanitize_filename(name: str) -> str:
     cleaned = ''.join(c for c in name if c in valid_chars).strip()
     return cleaned.replace(' ', '-')
 
-def extract_title(content: str) -> str:
-    """Extract title from first meaningful line"""
-    lines = content.split('\n')
-    for line in lines:
-        stripped = line.strip()
-        if stripped and len(stripped) > 10:  # Skip short lines/empty
-            return stripped.replace('#', '').strip()
-    return "Untitled Entry"
-
 def process_entry(file_path: Path):
-    """Process journal entries with proper structure"""
+    """Process all file types with formal structure"""
     try:
         if file_path.suffix.lower() not in ALLOWED_EXT:
+            logging.warning(f"Skipped unsupported file: {file_path.name}")
             return None
-
-        with open(file_path, 'r', encoding='utf-8') as f:
-            raw_content = f.read()
 
         base_name = sanitize_filename(file_path.stem)
         output_path = OUTPUT_DIR / f"{base_name}.html"
-        title = extract_title(raw_content)
-        
-        # Process content with proper spacing
+
+        # Extract content based on file type
         if file_path.suffix == '.md':
-            content = markdown.markdown(raw_content)
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = markdown.markdown(f.read())
         elif file_path.suffix == '.docx':
             doc = docx.Document(file_path)
-            content = "".join(f"<p>{p.text}</p>" for p in doc.paragraphs if p.text)
+            content = "".join(f"<p>{paragraph.text}</p>" for paragraph in doc.paragraphs if paragraph.text)
         elif file_path.suffix == '.pdf':
             with pdfplumber.open(file_path) as pdf:
-                content = "".join(f"<p>{page.extract_text()}</p>" for page in pdf.pages)
+                content = "".join(f"<p>{page.extract_text()}</p>" for page in pdf.pages if page.extract_text())
         else:
-            content = f"<pre>{raw_content}</pre>"
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f"<pre>{f.read()}</pre>"
 
-        # Generate structured HTML
+        # Generate formal document structure
         html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{title} | {SITE_TITLE}</title>
+    <title>{base_name.replace('-', ' ').title()} | {SITE_TITLE}</title>
     {SHARED_CSS}
 </head>
 <body>
-    <button class="theme-toggle" onclick="theme.toggle()">🌓</button>
+    <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
     
     <div class="container">
         <header>
             <h1>{SITE_TITLE}</h1>
             <nav>
-                <a href="/">← Back to Archive</a>
+                <a href="/">← Return to Archive</a>
             </nav>
         </header>
 
         <main class="content">
             <article>
-                <h2>{title}</h2>
-                
-                <div class="metadata">
-                    <p>Published: {datetime.now().strftime('%B %d, %Y')}</p>
-                </div>
-
-                <div class="key-findings">
-                    <h3>Key Findings</h3>
-                    <!-- Add your key findings content here -->
-                </div>
-
-                <div class="main-content">
-                    {content}
-                </div>
+                {content}
             </article>
         </main>
 
         <footer>
             <p>Document generated: {datetime.now().strftime('%Y-%m-%d')}</p>
-            <p>Official Archive - Restricted Access</p>
+            <p>Confidential - For Authorized Personnel Only</p>
         </footer>
     </div>
     
@@ -260,7 +224,7 @@ def process_entry(file_path: Path):
         return None
 
 def generate_index(entries: list):
-    """Generate main index page with consistent naming"""
+    """Generate formal archive index"""
     try:
         index_html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -271,32 +235,34 @@ def generate_index(entries: list):
     {SHARED_CSS}
 </head>
 <body>
-    <button class="theme-toggle" onclick="theme.toggle()">🌓</button>
+    <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
     
     <div class="container">
         <header>
             <h1>{SITE_TITLE}</h1>
             <nav>
-                <p>Comprehensive Policy Archive</p>
+                <p>Official Document Repository</p>
             </nav>
         </header>
 
         <main class="content">
-            <h2>Recent Entries</h2>
-            <ul>
-                {"".join(f'''
-                <li style="margin: 1.5rem 0; padding-left: 1rem; border-left: 3px solid var(--accent)">
-                    <a href="journal/{e}.html" style="text-decoration: none; color: var(--text)">
-                        {e.replace('-', ' ').title()}
-                    </a>
-                </li>
-                ''' for e in entries)}
-            </ul>
+            <article>
+                <h2>Archival Index</h2>
+                <ul>
+                    {"".join(f'''
+                    <li style="margin: 1.5rem 0; padding-left: 2rem; border-left: 2px solid var(--primary)">
+                        <a href="journal/{e}.html" style="text-decoration: none; color: var(--text)">
+                            {e.replace('-', ' ').title()}
+                        </a>
+                    </li>
+                    ''' for e in entries)}
+                </ul>
+            </article>
         </main>
 
         <footer>
             <p>Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M')}</p>
-            <p>Classified Level IV - Public Access Authorized</p>
+            <p>Classification Level IV - Public Access Authorized</p>
         </footer>
     </div>
     
@@ -313,25 +279,24 @@ def generate_index(entries: list):
         sys.exit(1)
 
 def main():
-    """Main workflow execution"""
+    """Main execution workflow"""
     try:
         shutil.rmtree(PUBLIC_DIR, ignore_errors=True)
         OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
         entries = []
-        for entry in sorted(JOURNAL_DIR.iterdir(), 
-                          key=lambda x: x.stat().st_ctime, 
-                          reverse=True):
+        for entry in JOURNAL_DIR.iterdir():
             if entry.is_file() and entry.suffix.lower() in ALLOWED_EXT:
                 result = process_entry(entry)
                 if result:
                     entries.append(result)
+                    logging.info(f"Processed: {entry.name}")
 
         if not entries:
             logging.error("No valid entries processed")
             sys.exit(1)
 
-        generate_index(entries)
+        generate_index(sorted(entries, key=lambda x: x.lower()))
         (PUBLIC_DIR / '.nojekyll').touch()
         logging.info("Build completed successfully")
 
@@ -340,4 +305,12 @@ def main():
         sys.exit(1)
 
 if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.FileHandler('build.log'),
+            logging.StreamHandler()
+        ]
+    )
     main()
