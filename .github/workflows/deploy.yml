@@ -1,20 +1,20 @@
-name: Final Deployment Fix
+name: Professional Deployment
 
 on:
   push:
-    branches: [default]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 7
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
@@ -26,13 +26,12 @@ jobs:
           sudo apt-get install -y \
             libgl1 \
             libglib2.0-0 \
-            libgomp1 \
-            libxcb-xinerama0
+            libgomp1
 
-      - name: Install Python Requirements
+      - name: Install Python Packages
         run: |
           pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install markdown==3.5.1 pdfplumber==0.10.3 python-docx==1.1.0
 
       - name: Generate Content
         run: |
@@ -40,10 +39,11 @@ jobs:
           python generate_entries.py
           [ -f public/index.html ] || exit 1
 
-      - name: Deploy
+      - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: ./public
           force_orphan: true
+          keep_files: false
