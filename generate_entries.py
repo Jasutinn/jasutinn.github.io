@@ -77,13 +77,13 @@ SHARED_CSS = """
         font-size: 1.1rem;
         max-width: var(--line-length);
         margin: 0 auto;
-        text-align: left; /* Changed from justify */
+        text-align: left;
     }
 
     .content p {
         margin: 1.5rem 0;
         line-height: 1.8;
-        text-indent: 0; /* Removed paragraph indentation */
+        text-indent: 0;
     }
 
     footer {
@@ -164,7 +164,7 @@ def process_entry(file_path: Path):
         base_name = sanitize_filename(file_path.stem)
         output_path = OUTPUT_DIR / f"{base_name}.html"
 
-        # Extract content based on file type
+        # Content extraction
         if file_path.suffix == '.md':
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = markdown.markdown(f.read())
@@ -178,7 +178,7 @@ def process_entry(file_path: Path):
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = f"<pre>{f.read()}</pre>"
 
-        # Generate formal document structure
+        # HTML generation
         html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -248,7 +248,7 @@ def generate_index(entries: list):
                 <h2>Archival Index</h2>
                 <ul style="list-style: none; padding-left: 0;">
                     {"".join(f'''
-                    <li style="margin: 1.5rem 0; padding-left: 0; border-left: none;">
+                    <li style="margin: 1.5rem 0;">
                         <a href="journal/{e}.html" style="text-decoration: none; color: var(--text)">
                             {e.replace('-', ' ').title()}
                         </a>
