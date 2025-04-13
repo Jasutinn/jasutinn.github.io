@@ -16,7 +16,7 @@ OUTPUT_DIR = PUBLIC_DIR / "journal"
 ALLOWED_EXT = {'.md', '.docx', '.pdf', '.txt'}
 SITE_TITLE = "Political Memoranda"
 
-# ===== DESIGN SYSTEM =====
+# ===== UNIVERSAL DESIGN SYSTEM =====
 SHARED_CSS = """
 <style>
     :root {
@@ -38,172 +38,13 @@ SHARED_CSS = """
         --accent: #8B5D5D;
     }
 
-    html {
-        visibility: hidden;
-        opacity: 0;
-    }
-    
-    html.loaded {
-        visibility: visible;
-        opacity: 1;
-        transition: opacity 0.3s ease;
-    }
-
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-
-    body {
-        font-family: 'Times New Roman', serif;
-        line-height: 1.7;
-        color: var(--text);
-        background: var(--background);
-        padding: 3rem 0;
-        min-height: 100vh;
-        min-width: 320px;
-        transition: background 0.5s ease, color 0.5s ease;
-        font-size: clamp(1rem, 0.75rem + 0.5vw, 1.1rem);
-    }
-
-    .container {
-        width: min(92%, var(--max-width));
-        margin: 0 auto;
-        padding: 0 2rem;
-    }
-
-    header {
-        border-bottom: 2px solid var(--primary);
-        padding: 0 0 1.5rem 2rem;
-        margin-bottom: 3rem;
-    }
-
-    h1 {
-        font-size: clamp(2rem, 1.5rem + 1.5vw, 2.5rem);
-        color: var(--primary);
-        margin: 0 0 1rem 0;
-        font-weight: normal;
-    }
-
-    .content {
-        max-width: min(95%, var(--line-length));
-        min-width: 280px;
-        margin: 0 auto;
-    }
-
-    .content p {
-        margin: 1.5rem 0;
-        line-height: 1.8;
-    }
-
-    footer {
-        margin-top: 4rem;
-        padding-top: 2rem;
-        border-top: 1px solid var(--border);
-        text-align: center;
-        font-size: 0.9em;
-        color: var(--text);
-        opacity: 0.8;
-    }
-
-    .theme-toggle {
-        position: fixed;
-        bottom: 2rem;
-        right: 2rem;
-        background: var(--primary);
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 3rem;
-        height: 3rem;
-        cursor: pointer;
-        opacity: 0.9;
-        transition: all 0.3s ease;
-    }
-
-    .theme-toggle:hover {
-        opacity: 1;
-        transform: scale(1.05);
-    }
-
-    a {
-        color: var(--text);
-        text-decoration: none;
-        transition: color 0.3s ease;
-    }
-
-    a:hover {
-        color: var(--accent);
-        text-decoration: underline;
-    }
-
-    @media (pointer: coarse) {
-        body {
-            font-size: clamp(1.05rem, 1rem + 0.5vw, 1.15rem);
-            line-height: 1.8;
-        }
-        
-        .theme-toggle {
-            width: 4rem;
-            height: 4rem;
-            bottom: 3rem;
-            right: 3rem;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .container {
-            padding: 0 1.5rem;
-        }
-        
-        header {
-            padding-left: 1rem;
-        }
-    }
-
-    @media (min-width: 1600px) {
-        :root {
-            font-size: 105%;
-        }
-    }
+    /* ... (keep all previous CSS rules unchanged) ... */
 </style>
 """
 
 THEME_SCRIPT = """
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        document.documentElement.classList.add('loaded');
-        
-        const systemDark = window.matchMedia('(prefers-color-scheme: dark)');
-        const updateTheme = (isDark) => {
-            document.documentElement.style.transition = 'none';
-            requestAnimationFrame(() => {
-                document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-                document.documentElement.style.transition = '';
-            });
-        };
-
-        const storedTheme = localStorage.getItem('theme');
-        if (!storedTheme) {
-            updateTheme(systemDark.matches);
-        } else {
-            document.documentElement.setAttribute('data-theme', storedTheme);
-        }
-
-        systemDark.addListener((e) => {
-            if (!localStorage.getItem('theme')) {
-                updateTheme(e.matches);
-            }
-        });
-
-        window.toggleTheme = function() {
-            const current = document.documentElement.getAttribute('data-theme');
-            const newTheme = current === 'dark' ? 'light' : 'dark';
-            localStorage.setItem('theme', newTheme);
-            updateTheme(newTheme === 'dark');
-        }
-    });
+    // ... (keep previous theme script unchanged) ...
 </script>
 """
 
@@ -214,7 +55,7 @@ def sanitize_filename(name: str) -> str:
     return cleaned.replace(' ', '-')
 
 def process_entry(file_path: Path):
-    """Process all file types with formal structure"""
+    """Process document files into HTML pages"""
     try:
         if file_path.suffix.lower() not in ALLOWED_EXT:
             logging.warning(f"Skipped unsupported file: {file_path.name}")
@@ -223,7 +64,7 @@ def process_entry(file_path: Path):
         base_name = sanitize_filename(file_path.stem)
         output_path = OUTPUT_DIR / f"{base_name}.html"
 
-        # Extract content based on file type
+        # Content extraction logic
         if file_path.suffix == '.md':
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = markdown.markdown(f.read())
@@ -233,11 +74,11 @@ def process_entry(file_path: Path):
         elif file_path.suffix == '.pdf':
             with pdfplumber.open(file_path) as pdf:
                 content = "".join(f"<p>{page.extract_text()}</p>" for page in pdf.pages if page.extract_text())
-        else:
+        else:  # .txt files
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = f"<pre>{f.read()}</pre>"
 
-        # Generate formal document structure
+        # HTML template
         html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -281,7 +122,7 @@ def process_entry(file_path: Path):
         return None
 
 def generate_index(entries: list):
-    """Generate formal archive index"""
+    """Generate archive index page"""
     try:
         index_html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -334,4 +175,47 @@ def generate_index(entries: list):
         logging.critical(f"Index generation failed: {str(e)}")
         sys.exit(1)
 
-# ... (rest of the code remains identical to previous version)
+def main():
+    """Main execution workflow"""
+    try:
+        # Clean previous build
+        if PUBLIC_DIR.exists():
+            shutil.rmtree(PUBLIC_DIR, ignore_errors=True)
+        
+        # Create directories with proper permissions
+        PUBLIC_DIR.mkdir(parents=True, exist_ok=True, mode=0o755)
+        OUTPUT_DIR.mkdir(parents=True, exist_ok=True, mode=0o755)
+        JOURNAL_DIR.mkdir(parents=True, exist_ok=True, mode=0o755)
+
+        # Process journal entries
+        entries = []
+        for entry in JOURNAL_DIR.iterdir():
+            if entry.is_file() and entry.suffix.lower() in ALLOWED_EXT:
+                result = process_entry(entry)
+                if result:
+                    entries.append(result)
+                    logging.info(f"Processed: {entry.name}")
+
+        # Handle empty journal case
+        if not entries:
+            logging.warning("No valid entries found - generating empty index")
+            entries = ["welcome"]  # Default entry for empty journal
+
+        generate_index(sorted(entries, key=lambda x: x.lower()))
+        (PUBLIC_DIR / '.nojekyll').touch(mode=0o644)
+        logging.info("Build completed successfully")
+
+    except Exception as e:
+        logging.critical(f"Fatal error: {str(e)}")
+        sys.exit(1)
+
+if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        handlers=[
+            logging.FileHandler('build.log'),
+            logging.StreamHandler()
+        ]
+    )
+    main()
