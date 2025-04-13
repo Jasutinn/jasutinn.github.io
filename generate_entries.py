@@ -14,37 +14,33 @@ JOURNAL_DIR = Path("journal")
 PUBLIC_DIR = Path("public")
 OUTPUT_DIR = PUBLIC_DIR / "journal"
 ALLOWED_EXT = {'.md', '.docx', '.pdf', '.txt'}
-SITE_TITLE = "Political Memoranda"
+SITE_TITLE = "Political Memoranda"  # Unified title
 
-# ===== SOPHISTICATED DESIGN SYSTEM =====
+# ===== ENHANCED DESIGN SYSTEM =====
 SHARED_CSS = """
 <style>
     :root {
-        --primary: #2B547E;    /* Authority Navy */
-        --accent: #9B3D3D;     /* Crimson Accent */
-        --text: #333333;       /* Base Text */
-        --background: #FFFFFF; /* Light Background */
-        --border: #E0E0E0;     /* Subtle Borders */
-        --max-width: min(92vw, 1200px); /* Responsive Containers */
-        --line-length: 70ch;   /* Optimal Readability */
+        --primary: #2B547E;    /* Professional Navy */
+        --accent: #9B3D3D;     /* Warm Accent */
+        --text: #333333;
+        --background: #FFFFFF;
+        --border: #E0E0E0;
+        --max-width: min(92vw, 1200px);
+        --line-length: 70ch;
     }
 
     [data-theme="dark"] {
-        --text: #E8E8E8;       /* Soft White */
-        --background: #1A1A1A; /* Deep Charcoal */
-        --border: #404040;     /* Dark Mode Borders */
-        --primary: #4A7BA6;    /* Softer Navy */
-        --accent: #B85C5C;     /* Warm Accent */
+        --text: #F0F0F0;
+        --background: #1A1A1A;
+        --border: #404040;
+        --primary: #4A7BA6;
+        --accent: #B85C5C;
     }
 
     * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
-    }
-
-    html {
-        scroll-behavior: smooth;
     }
 
     body {
@@ -67,14 +63,13 @@ SHARED_CSS = """
         border-bottom: 2px solid var(--primary);
         padding-bottom: 1.5rem;
         margin-bottom: 2.5rem;
+        text-align: center;
     }
 
     h1 {
         font-size: clamp(2rem, 5vw, 3rem);
         color: var(--primary);
         margin-bottom: 1rem;
-        font-weight: 600;
-        letter-spacing: -0.5px;
     }
 
     h2 {
@@ -87,8 +82,19 @@ SHARED_CSS = """
         font-size: clamp(1rem, 1.8vw, 1.2rem);
         max-width: var(--line-length);
         margin: 0 auto;
+    }
+
+    .content p {
+        margin: 1.5rem 0;
+        line-height: 1.8;
         text-align: justify;
-        hyphens: auto;
+    }
+
+    .key-findings {
+        background: rgba(var(--primary), 0.05);
+        border-left: 4px solid var(--accent);
+        padding: 1.5rem;
+        margin: 2rem 0;
     }
 
     footer {
@@ -97,7 +103,6 @@ SHARED_CSS = """
         border-top: 1px solid var(--border);
         text-align: center;
         font-size: 0.9rem;
-        color: var(--text);
         opacity: 0.9;
     }
 
@@ -114,10 +119,6 @@ SHARED_CSS = """
         cursor: pointer;
         box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         transition: all 0.3s ease;
-    }
-
-    .theme-toggle:hover {
-        transform: scale(1.1);
     }
 
     @media (max-width: 768px) {
@@ -162,40 +163,52 @@ THEME_SCRIPT = """
 """
 
 def sanitize_filename(name: str) -> str:
-    """Generate web-safe filenames"""
+    """Generate web-safe filenames with proper spacing"""
     valid_chars = f"-_.() {string.ascii_letters}{string.digits}"
-    return ''.join(c for c in name if c in valid_chars).strip().replace(' ', '-')
+    cleaned = ''.join(c for c in name if c in valid_chars).strip()
+    return cleaned.replace(' ', '-')
+
+def extract_title(content: str) -> str:
+    """Extract title from first meaningful line"""
+    lines = content.split('\n')
+    for line in lines:
+        stripped = line.strip()
+        if stripped and len(stripped) > 10:  # Skip short lines/empty
+            return stripped.replace('#', '').strip()
+    return "Untitled Entry"
 
 def process_entry(file_path: Path):
-    """Process journal entries with unified design"""
+    """Process journal entries with proper structure"""
     try:
         if file_path.suffix.lower() not in ALLOWED_EXT:
             return None
 
+        with open(file_path, 'r', encoding='utf-8') as f:
+            raw_content = f.read()
+
         base_name = sanitize_filename(file_path.stem)
         output_path = OUTPUT_DIR / f"{base_name}.html"
-
-        # Content processing
+        title = extract_title(raw_content)
+        
+        # Process content with proper spacing
         if file_path.suffix == '.md':
-            with open(file_path, 'r') as f:
-                content = markdown.markdown(f.read())
+            content = markdown.markdown(raw_content)
         elif file_path.suffix == '.docx':
             doc = docx.Document(file_path)
-            content = "\n".join(f"<p>{p.text}</p>" for p in doc.paragraphs if p.text)
+            content = "".join(f"<p>{p.text}</p>" for p in doc.paragraphs if p.text)
         elif file_path.suffix == '.pdf':
             with pdfplumber.open(file_path) as pdf:
                 content = "".join(f"<p>{page.extract_text()}</p>" for page in pdf.pages)
         else:
-            with open(file_path, 'r') as f:
-                content = f.read()
+            content = f"<pre>{raw_content}</pre>"
 
-        # Generate entry HTML
+        # Generate structured HTML
         html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{base_name.replace('-', ' ').title()} | {SITE_TITLE}</title>
+    <title>{title} | {SITE_TITLE}</title>
     {SHARED_CSS}
 </head>
 <body>
@@ -205,13 +218,27 @@ def process_entry(file_path: Path):
         <header>
             <h1>{SITE_TITLE}</h1>
             <nav>
-                <a href="/">← Return to Archive</a>
+                <a href="/">← Back to Archive</a>
             </nav>
         </header>
 
         <main class="content">
-            <h2>{base_name.replace('-', ' ').title()}</h2>
-            {content}
+            <article>
+                <h2>{title}</h2>
+                
+                <div class="metadata">
+                    <p>Published: {datetime.now().strftime('%B %d, %Y')}</p>
+                </div>
+
+                <div class="key-findings">
+                    <h3>Key Findings</h3>
+                    <!-- Add your key findings content here -->
+                </div>
+
+                <div class="main-content">
+                    {content}
+                </div>
+            </article>
         </main>
 
         <footer>
@@ -233,7 +260,7 @@ def process_entry(file_path: Path):
         return None
 
 def generate_index(entries: list):
-    """Generate professional index page"""
+    """Generate main index page with consistent naming"""
     try:
         index_html = f"""<!DOCTYPE html>
 <html lang="en">
@@ -248,11 +275,14 @@ def generate_index(entries: list):
     
     <div class="container">
         <header>
-            <h1>{SITE_TITLE} Archive</h1>
+            <h1>{SITE_TITLE}</h1>
+            <nav>
+                <p>Comprehensive Policy Archive</p>
+            </nav>
         </header>
 
         <main class="content">
-            <h2>Recent Memoranda</h2>
+            <h2>Recent Entries</h2>
             <ul>
                 {"".join(f'''
                 <li style="margin: 1.5rem 0; padding-left: 1rem; border-left: 3px solid var(--accent)">
@@ -283,7 +313,7 @@ def generate_index(entries: list):
         sys.exit(1)
 
 def main():
-    """Main execution flow"""
+    """Main workflow execution"""
     try:
         shutil.rmtree(PUBLIC_DIR, ignore_errors=True)
         OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
