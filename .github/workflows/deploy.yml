@@ -1,51 +1,65 @@
-name: Guaranteed Site Deployment
+name: Guaranteed Publication
 
 on:
   push:
     branches: [default]
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
-    
+    timeout-minutes: 7
     steps:
-      - name: Checkout Repository
+      - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Set up Python Environment
+      - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
           cache: 'pip'
-          
-      - name: Install System Requirements
+
+      - name: Install Critical Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgl1 libgomp1 libxcb-xinerama0
-          
+          sudo apt-get install -y \
+            libgl1 \
+            libglib2.0-0 \
+            libgomp1 \
+            libxcb-xinerama0 \
+            libxkbcommon-x11-0
+          sudo ln -s /usr/lib/x86_64-linux-gnu/libz.so /usr/lib/
+
       - name: Install Python Packages
         run: |
-          pip install --upgrade pip
-          pip install markdown pdfplumber python-docx beautifulsoup4
+          python -m pip install --upgrade pip
+          pip install \
+            markdown \
+            pdfplumber \
+            python-docx \
+            beautifulsoup4 \
+            pygments
 
-      - name: Generate Site Content
+      - name: Generate Content with Verification
         run: |
           rm -rf public
           python generate_entries.py
-          echo "Generated files structure:"
-          tree public
+          
+          # Validate output
+          [ -f public/index.html ] || exit 1
+          [ -d public/journal ] || exit 1
+          echo "Generated files:"
+          ls -lR public
+          echo "Total entries: $(ls public/journal | wc -l)"
 
-      - name: Deploy to GitHub Pages
+      - name: Force Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: ./public
           force_orphan: true
-          keep_files: false
           enable_jekyll: false
+          keep_files: false
