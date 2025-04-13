@@ -16,16 +16,16 @@ OUTPUT_DIR = PUBLIC_DIR / "journal"
 ALLOWED_EXT = {'.md', '.docx', '.pdf', '.txt'}
 SITE_TITLE = "Political Memoranda"
 
-# ===== PROFESSIONAL DESIGN SYSTEM =====
+# ===== ENHANCED DESIGN SYSTEM =====
 SHARED_CSS = """
 <style>
     :root {
-        --primary: #1A2B4D;    /* Authority Navy */
-        --accent: #7A1F1F;     /* Formal Crimson */
+        --primary: #1A2B4D;
+        --accent: #7A1F1F;
         --text: #333333;
         --background: #FFFFFF;
         --border: #E0E0E0;
-        --max-width: min(92vw, 1200px);
+        --max-width: 1200px;
         --line-length: 70ch;
     }
 
@@ -35,6 +35,17 @@ SHARED_CSS = """
         --border: #404040;
         --primary: #2B4D7A;
         --accent: #9B3D3D;
+    }
+
+    html {
+        visibility: hidden;
+        opacity: 0;
+    }
+    
+    html.loaded {
+        visibility: visible;
+        opacity: 1;
+        transition: opacity 0.3s ease;
     }
 
     * {
@@ -54,16 +65,17 @@ SHARED_CSS = """
     }
 
     .container {
-        width: var(--max-width);
+        width: 90%;
+        max-width: var(--max-width);
         margin: 0 auto;
         padding: 0 2rem;
     }
 
     header {
         border-bottom: 2px solid var(--primary);
-        padding-bottom: 1.5rem;
+        padding: 0 0 1.5rem 2rem;
         margin-bottom: 3rem;
-        text-align: center;
+        text-align: left;
     }
 
     h1 {
@@ -77,13 +89,11 @@ SHARED_CSS = """
         font-size: 1.1rem;
         max-width: var(--line-length);
         margin: 0 auto;
-        text-align: justify;
     }
 
     .content p {
         margin: 1.5rem 0;
         line-height: 1.8;
-        text-indent: 3rem;
     }
 
     footer {
@@ -115,16 +125,29 @@ SHARED_CSS = """
         opacity: 1;
     }
 
+    a {
+        color: var(--text);
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    a:hover {
+        color: var(--accent);
+        text-decoration: underline;
+    }
+
     @media (max-width: 768px) {
         .container {
-            padding: 0 1.5rem;
+            padding: 0 1rem;
+            width: 100%;
         }
+        
         h1 {
             font-size: 2rem;
         }
+        
         .content {
             font-size: 1rem;
-            text-indent: 2rem;
         }
     }
 </style>
@@ -132,20 +155,36 @@ SHARED_CSS = """
 
 THEME_SCRIPT = """
 <script>
-    (function() {
-        const storedTheme = localStorage.getItem('theme');
-        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const initialTheme = storedTheme || (systemDark ? 'dark' : 'light');
+    document.addEventListener('DOMContentLoaded', function() {
+        document.documentElement.classList.add('loaded');
         
-        document.documentElement.setAttribute('data-theme', initialTheme);
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)');
+        const updateTheme = (isDark) => {
+            document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+        };
+
+        // Initialize theme
+        const storedTheme = localStorage.getItem('theme');
+        if (!storedTheme) {
+            updateTheme(systemDark.matches);
+        } else {
+            document.documentElement.setAttribute('data-theme', storedTheme);
+        }
+
+        // System preference listener
+        systemDark.addListener((e) => {
+            if (!localStorage.getItem('theme')) {
+                updateTheme(e.matches);
+            }
+        });
 
         window.toggleTheme = function() {
             const current = document.documentElement.getAttribute('data-theme');
             const newTheme = current === 'dark' ? 'light' : 'dark';
             localStorage.setItem('theme', newTheme);
-            document.documentElement.setAttribute('data-theme', newTheme);
+            updateTheme(newTheme === 'dark');
         }
-    })();
+    });
 </script>
 """
 
@@ -184,7 +223,7 @@ def process_entry(file_path: Path):
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>{base_name.replace('-', ' ').title()} | {SITE_TITLE}</title>
     {SHARED_CSS}
 </head>
@@ -211,7 +250,7 @@ def process_entry(file_path: Path):
         </footer>
     </div>
     
-    <script>{THEME_SCRIPT}</script>
+    {THEME_SCRIPT}
 </body>
 </html>
         """
@@ -230,7 +269,7 @@ def generate_index(entries: list):
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>{SITE_TITLE} Archive</title>
     {SHARED_CSS}
 </head>
@@ -251,7 +290,7 @@ def generate_index(entries: list):
                 <ul>
                     {"".join(f'''
                     <li style="margin: 1.5rem 0; padding-left: 2rem; border-left: 2px solid var(--primary)">
-                        <a href="journal/{e}.html" style="text-decoration: none; color: var(--text)">
+                        <a href="journal/{e}.html">
                             {e.replace('-', ' ').title()}
                         </a>
                     </li>
@@ -266,7 +305,7 @@ def generate_index(entries: list):
         </footer>
     </div>
     
-    <script>{THEME_SCRIPT}</script>
+    {THEME_SCRIPT}
 </body>
 </html>
         """
