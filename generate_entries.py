@@ -6,99 +6,155 @@ from datetime import datetime
 from bs4 import BeautifulSoup
 import shutil
 
-# ===== CONFIG =====
+# ===== DESIGN-CORRECTED VERSION =====
 JOURNAL_DIR = "journal"
 PUBLIC_DIR = "public"
 OUTPUT_DIR = os.path.join(PUBLIC_DIR, "journal")
-ENTRY_TEMPLATE = """<!DOCTYPE html>
-<html>
+
+PROFESSIONAL_TEMPLATE = """<!DOCTYPE html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{title}</title>
     <style>
-        body {{ font-family: Arial, sans-serif; line-height: 1.6; max-width: 800px; margin: 0 auto; padding: 20px; }}
-        h1 {{ color: #00274D; border-bottom: 2px solid #00274D; }}
-        .content {{ margin: 20px 0; }}
-        footer {{ color: #666; margin-top: 40px; border-top: 1px solid #ddd; }}
+        :root {{
+            --primary: #00274D;
+            --accent: #8B0000;
+        }}
+        * {{ box-sizing: border-box; margin: 0; }}
+        body {{
+            font-family: 'Georgia', serif;
+            line-height: 1.8;
+            max-width: 680px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            color: #333;
+        }}
+        header {{
+            border-bottom: 3px solid var(--primary);
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+        }}
+        h1 {{
+            color: var(--primary);
+            font-size: 2rem;
+            letter-spacing: -0.5px;
+        }}
+        .entry-list {{
+            list-style: none;
+            padding: 0;
+            margin-top: 2rem;
+        }}
+        .entry-item {{
+            margin: 1.2rem 0;
+            padding: 1rem;
+            border-left: 4px solid var(--accent);
+            transition: all 0.2s;
+        }}
+        .entry-item:hover {{
+            background: #f8f8f8;
+            transform: translateX(5px);
+        }}
+        .entry-link {{
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1.1rem;
+        }}
+        footer {{
+            margin-top: 3rem;
+            padding-top: 1rem;
+            color: #666;
+            border-top: 1px solid #ddd;
+            text-align: center;
+        }}
+        @media (max-width: 480px) {{
+            body {{ margin: 1rem auto; }}
+            h1 {{ font-size: 1.6rem; }}
+        }}
     </style>
 </head>
 <body>
-    <h1>{title}</h1>
-    <div class="content">{content}</div>
-    <footer>Generated on {date}</footer>
+    <header>
+        <h1>Political Memoranda</h1>
+    </header>
+
+    <ul class="entry-list">
+        {entries}
+    </ul>
+
+    <footer>
+        &copy; {year} Justine de La Torre<br>
+        Official digital repository - All rights reserved
+    </footer>
 </body>
 </html>
 """
 
-def safe_convert(func, path):
-    try:
-        return func(path)
-    except Exception as e:
-        print(f"Error processing {path}: {str(e)}")
-        return ""
-
 def process_entries():
-    # Clear existing output
+    # Clean previous build
     shutil.rmtree(PUBLIC_DIR, ignore_errors=True)
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    
+
     entries = []
     
-    for filename in os.listdir(JOURNAL_DIR):
-        entry_path = os.path.join(JOURNAL_DIR, filename)
-        base_name = os.path.splitext(filename)[0]
-        output_path = os.path.join(OUTPUT_DIR, f"{base_name}.html")
-        
-        # Process content
-        if filename.endswith(".md"):
-            with open(entry_path, "r") as f:
-                content = markdown.markdown(f.read())
-        elif filename.endswith(".docx"):
-            doc = docx.Document(entry_path)
-            content = "\n".join([p.text for p in doc.paragraphs])
-        elif filename.endswith(".pdf"):
-            content = ""
-            with pdfplumber.open(entry_path) as pdf:
-                for page in pdf.pages:
-                    content += page.extract_text()
-        else:
+    # Process journal files
+    for filename in sorted(os.listdir(JOURNAL_DIR), reverse=True):
+        if not filename.lower().endswith(('.md', '.docx', '.pdf', '.txt')):
             continue
-        
-        # Save entry
-        with open(output_path, "w") as f:
-            f.write(ENTRY_TEMPLATE.format(
-                title=base_name.replace("-", " ").title(),
-                content=content,
-                date=datetime.now().strftime("%Y-%m-%d")
-            ))
-        
-        entries.append({
-            "title": base_name.replace("-", " ").title(),
-            "url": f"journal/{base_name}.html"
-        })
-    
-    # Generate index
+
+        try:
+            base_name = os.path.splitext(filename)[0]
+            title = ' '.join(base_name.split('-')).title()
+            entry_path = os.path.join(OUTPUT_DIR, f"{base_name}.html")
+            
+            # Generate entry content
+            with open(os.path.join(JOURNAL_DIR, filename), "r") as f:
+                content = markdown.markdown(f.read()) if filename.endswith('.md') else f.read()
+
+            # Save individual entry
+            with open(entry_path, "w") as f:
+                f.write(f"""<!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>{title}</title>
+                    <style>
+                        body {{ 
+                            font-family: 'Georgia', serif;
+                            line-height: 1.8;
+                            max-width: 680px;
+                            margin: 2rem auto;
+                            padding: 0 1rem;
+                        }}
+                        .content {{ margin: 2rem 0; }}
+                    </style>
+                </head>
+                <body>
+                    <h1>{title}</h1>
+                    <div class="content">{content}</div>
+                </body>
+                </html>
+                """)
+
+            entries.append(f"""
+            <li class="entry-item">
+                <a href="journal/{base_name}.html" class="entry-link">
+                    {title}
+                </a>
+            </li>
+            """)
+
+        except Exception as e:
+            print(f"Error processing {filename}: {str(e)}")
+
+    # Generate professional index
     with open(os.path.join(PUBLIC_DIR, "index.html"), "w") as f:
-        f.write(f"""<!DOCTYPE html>
-        <html>
-        <head>
-            <title>Political Memoranda</title>
-            <style>
-                body {{ max-width: 800px; margin: 0 auto; padding: 20px; }}
-                h1 {{ color: #00274D; }}
-                ul {{ list-style: none; padding: 0; }}
-                li {{ margin: 10px 0; }}
-                a {{ color: #00274D; text-decoration: none; }}
-            </style>
-        </head>
-        <body>
-            <h1>Political Memoranda</h1>
-            <ul>
-                {"".join(f'<li><a href="{e["url"]}">{e["title"]}</a></li>' for e in entries)}
-            </ul>
-        </body>
-        </html>
-        """)
+        f.write(PROFESSIONAL_TEMPLATE.format(
+            entries='\n'.join(entries),
+            year=datetime.now().year
+        ))
 
 if __name__ == "__main__":
     process_entries()
