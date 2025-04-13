@@ -1,4 +1,4 @@
-name: Official Publication Workflow
+name: Guaranteed Deployment
 
 on:
   push:
@@ -9,31 +9,34 @@ permissions:
   contents: write
 
 jobs:
-  publish:
+  deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout State Documents
+      - name: Checkout Repository
         uses: actions/checkout@v4
-        
-      - name: Establish Secure Environment
+
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-          cache: 'pip'
-          
-      - name: Install Analytical Tools
+
+      - name: Install Critical Dependencies
         run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1 libgomp1
           pip install markdown pdfplumber python-docx beautifulsoup4
-          
-      - name: Generate Official Records
+
+      - name: Clean & Generate
         run: |
+          rm -rf public
           python generate_entries.py
-          
-      - name: Deploy to Public Registry
+          ls -R public  # Verify file structure
+
+      - name: Nuclear Deploy
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: ./public
           force_orphan: true
-          commit_message: 'OFFICIAL UPDATE: New memoranda published [automated]'
+          keep_files: false
