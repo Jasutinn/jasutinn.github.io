@@ -1,40 +1,39 @@
-name: Deploy to GitHub Pages
+name: Official Publication Workflow
 
 on:
   push:
-    branches:
-      - default
+    branches: [default]
   workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  deploy:
+  publish:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Repository
+      - name: Checkout State Documents
         uses: actions/checkout@v4
-
-      - name: Set up Python
+        
+      - name: Establish Secure Environment
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-
-      - name: Install Dependencies
+          cache: 'pip'
+          
+      - name: Install Analytical Tools
         run: |
-          pip install markdown pdfplumber beautifulsoup4 python-docx
-
-      - name: Run Python Script
+          pip install markdown pdfplumber python-docx beautifulsoup4
+          
+      - name: Generate Official Records
         run: |
           python generate_entries.py
-          [ -d public ] || mkdir public
-
-      - name: Deploy to GitHub Pages
+          
+      - name: Deploy to Public Registry
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: ./public
           force_orphan: true
+          commit_message: 'OFFICIAL UPDATE: New memoranda published [automated]'
