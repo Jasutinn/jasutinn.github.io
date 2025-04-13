@@ -8,7 +8,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 10  # Increased timeout
+    timeout-minutes: 10
 
     steps:
       - name: Checkout Repository
@@ -33,20 +33,17 @@ jobs:
 
       - name: Install Python Packages
         run: |
-          pip install -r requirements.txt
+          pip install markdown==3.5.2 pdfplumber==0.11.0 python-docx==1.1.2 PyMuPDF==1.24.4
+          pip-audit
 
       - name: Generate Content
         run: |
           rm -rf public
-          # Ensure journal directory exists
           mkdir -p journal
-          # Create placeholder if empty
           [ "$(ls -A journal)" ] || touch journal/placeholder.md
-          # Run generator with logging
           python generate_entries.py || exit 1
-          # Verify output integrity
-          [ -s public/index.html ] || (echo "Index file invalid" && exit 1)
-          ls -lR public  # Debug output
+          [ -s public/index.html ] || (echo "Invalid index file" && exit 1)
+          ls -lR public
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
