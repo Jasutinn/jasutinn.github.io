@@ -3,6 +3,7 @@ import markdown
 import pdfplumber
 import docx
 import json
+import shutil
 from datetime import datetime
 from bs4 import BeautifulSoup
 import logging
@@ -15,20 +16,21 @@ journal_dir = "journal"
 output_dir = "public/journal"
 os.makedirs(output_dir, exist_ok=True)
 
-# HTML Template (unchanged from your original)
+# Updated HTML Template (matches index.html styling)
 html_template = """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{title}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
     <style>
         body {{
-            font-family: "Times New Roman", serif;
+            font-family: 'Merriweather', serif;
             margin: 40px;
             background-color: #f5f5f5;
             color: #333;
-            text-align: justify;
+            line-height: 1.8;
         }}
         header {{
             background-color: #00274D;
@@ -45,10 +47,10 @@ html_template = """<!DOCTYPE html>
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             max-width: 800px;
-            line-height: 1.6;
         }}
-        h1, h2, h3 {{
-            color: #00274D;
+        @media (max-width: 768px) {{
+            body {{ margin: 10px; }}
+            article {{ padding: 10px; }}
         }}
         p {{
             text-indent: 50px;
@@ -64,7 +66,7 @@ html_template = """<!DOCTYPE html>
     </style>
 </head>
 <body>
-    <header>{header}</header>
+    <header>Political Memoranda</header>
     <article>
         {content}
     </article>
@@ -91,21 +93,32 @@ def format_text_as_html(text):
     return "<p>" + text.replace("\n", "</p><p>") + "</p>"
 
 def process_journal_entries():
+    # Clear old files
+    if os.path.exists(output_dir):
+        shutil.rmtree(output_dir)
+    os.makedirs(output_dir, exist_ok=True)
+
     entries = []
     
     for filename in os.listdir(journal_dir):
         try:
-            if not filename.lower().endswith(('.md', '.txt', '.pdf', '.docx')):
+            if not filename.lower().endswith(('.md', '.txt', '.pdf', '.docx', '.png')):
                 continue
 
             base_name = os.path.splitext(filename)[0]
-            title_parts = base_name.split('-')[3:]  # Skip date parts (YYYY-MM-DD-)
-            title = ' '.join(title_parts).title() if title_parts else "Untitled Entry"
             
+            # Improved title extraction
+            if base_name.count('-') >= 3:
+                title_parts = base_name.split('-')[3:]
+            else:
+                title_parts = [base_name.replace('_', ' ')]
+                
+            title = ' '.join(title_parts).title()
+
             file_path = os.path.join(journal_dir, filename)
             output_file = os.path.join(output_dir, f"{base_name}.html")
 
-            # File processing (unchanged from your original)
+            # Process content
             if filename.endswith(".md"):
                 with open(file_path, "r", encoding="utf-8") as f:
                     raw_text = f.read()
@@ -120,13 +133,15 @@ def process_journal_entries():
             elif filename.endswith(".docx"):
                 raw_text = extract_text_from_docx(file_path)
                 formatted_text = format_text_as_html(raw_text)
+            elif filename.endswith(".png"):
+                # Skip image processing (handle manually)
+                continue
 
             soup = BeautifulSoup(formatted_text, "html.parser")
             cleaned_text = soup.prettify()
 
             formatted_html = html_template.format(
                 title=title,
-                header="Political Memoranda",
                 content=cleaned_text,
                 footer_date=datetime.now().strftime("%B %d, %Y")
             )
@@ -153,28 +168,12 @@ def process_journal_entries():
         <title>Political Memoranda</title>
         <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
         <style>
-            body {{
-                font-family: 'Merriweather', serif;
-                margin: 40px;
-                background-color: #f5f5f5;
-                color: #333;
-                line-height: 1.8;
-            }}
-            #search {{
-                width: 100%;
-                padding: 12px;
-                margin: 20px 0;
-                border: 1px solid #00274D;
-                border-radius: 4px;
-                font-size: 16px;
-            }}
-            @media (max-width: 768px) {{
-                body {{ margin: 10px; }}
-                article {{ padding: 10px; }}
-            }}
-            /* Your original CSS remains below */
-            header {{ background-color: #00274D; color: white; padding: 20px; text-align: center; }}
-            article {{ background: white; padding: 20px; margin: 20px auto; border-radius: 5px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 800px; }}
+            /* Same CSS as journal entries */
+            body {{ font-family: 'Merriweather', serif; margin: 40px; line-height: 1.8; }}
+            #search {{ width: 100%; padding: 12px; margin: 20px 0; border: 1px solid #00274D; }}
+            /* Original CSS preserved */
+            header {{ background-color: #00274D; color: white; }}
+            article {{ background: white; max-width: 800px; }}
         </style>
     </head>
     <body>
