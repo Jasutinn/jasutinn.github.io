@@ -27,6 +27,7 @@ SHARED_CSS = """
         --border: #E0E0E0;
         --max-width: min(92vw, 1200px);
         --line-length: 70ch;
+        --mobile-breakpoint: 768px;
     }
 
     [data-theme="dark"] {
@@ -51,6 +52,8 @@ SHARED_CSS = """
         padding: 3rem 0;
         min-height: 100vh;
         transition: background 0.3s ease, color 0.3s ease;
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
     }
 
     .container {
@@ -78,12 +81,18 @@ SHARED_CSS = """
         max-width: var(--line-length);
         margin: 0 auto;
         text-align: left;
+        hyphens: auto;
+        word-wrap: break-word;
     }
 
     .content p {
         margin: 1.5rem 0;
         line-height: 1.8;
-        text-indent: 0;
+    }
+
+    .multi-column {
+        column-width: 45ch;
+        column-gap: 4rem;
     }
 
     footer {
@@ -116,14 +125,31 @@ SHARED_CSS = """
     }
 
     @media (max-width: 768px) {
+        :root {
+            --line-length: 90vw;
+        }
+
+        body {
+            padding: 2rem 0;
+            font-size: 1rem;
+        }
+
         .container {
             padding: 0 1.5rem;
         }
-        h1 {
-            font-size: 2rem;
-        }
+
         .content {
-            font-size: 1rem;
+            font-size: clamp(1rem, 4vw, 1.2rem);
+            line-height: 1.7;
+        }
+
+        .theme-toggle {
+            bottom: 1rem;
+            right: 1rem;
+        }
+
+        .multi-column {
+            column-width: unset;
         }
     }
 </style>
@@ -164,7 +190,7 @@ def process_entry(file_path: Path):
         base_name = sanitize_filename(file_path.stem)
         output_path = OUTPUT_DIR / f"{base_name}.html"
 
-        # Content extraction
+        # Extract content
         if file_path.suffix == '.md':
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = markdown.markdown(f.read())
@@ -178,12 +204,15 @@ def process_entry(file_path: Path):
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = f"<pre>{f.read()}</pre>"
 
-        # HTML generation
+        # Apply multi-column for long content
+        column_class = " multi-column" if len(content) > 5000 else ""
+
+        # Generate HTML
         html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>{base_name.replace('-', ' ').title()} | {SITE_TITLE}</title>
     {SHARED_CSS}
 </head>
@@ -198,7 +227,7 @@ def process_entry(file_path: Path):
             </nav>
         </header>
 
-        <main class="content">
+        <main class="content{class column_class}">
             <article>
                 {content}
             </article>
@@ -228,7 +257,7 @@ def generate_index(entries: list):
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>{SITE_TITLE} Archive</title>
     {SHARED_CSS}
 </head>
@@ -279,6 +308,7 @@ def main():
     """Main execution workflow"""
     try:
         shutil.rmtree(PUBLIC_DIR, ignore_errors=True)
+        PUBLIC_DIR.mkdir(parents=True, exist_ok=True)
         OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
         entries = []
