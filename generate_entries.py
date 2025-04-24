@@ -1,3 +1,4 @@
+# ===== FULL IMPLEMENTATION =====
 import os
 import string
 import sys
@@ -21,7 +22,7 @@ SECTION_CONFIG = {
         'source': LEGISLATIVE_DIR,
         'public': PUBLIC_DIR / 'legislative',
         'title': 'My Legislative Agenda',
-        'color': '#1A2B4D'  # Dark blue
+        'color': '#1A2B4D'
     },
     'journal': {
         'source': JOURNAL_DIR,
@@ -29,7 +30,7 @@ SECTION_CONFIG = {
         'title': 'Journal Archive',
         'subsections': {
             'personal': {'title': 'Personal Journal', 'color': '#4A4A4A'},
-            'political': {'title': 'Political Memoranda', 'color': '#DC143C'},  # Crimson
+            'political': {'title': 'Political Memoranda', 'color': '#DC143C'},
             'law': {'title': 'Law Journal', 'color': '#2B4D7A'}
         }
     }
@@ -38,21 +39,21 @@ SECTION_CONFIG = {
 SHARED_CSS = """
 <style>
     :root {
-        --primary: #1A2B4D;       /* Dark blue */
-        --accent: #DC143C;        /* Crimson */
-        --background: #F5F5DC;    /* Beige */
+        --primary: #1A2B4D;
+        --accent: #DC143C;
+        --background: #F5F5DC;
         --text: #333333;
-        --border: #D4AF37;        /* Gold accent */
+        --border: #D4AF37;
     }
 
     * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
+        font-family: 'Merriweather', serif;
     }
 
     body {
-        font-family: 'Merriweather', serif;
         background: var(--background);
         color: var(--text);
         line-height: 1.6;
@@ -82,7 +83,6 @@ SHARED_CSS = """
     .nav a {
         color: white;
         text-decoration: none;
-        font-size: 1.1rem;
         padding: 0.5rem 1rem;
         transition: opacity 0.3s;
     }
@@ -99,28 +99,6 @@ SHARED_CSS = """
         box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     }
 
-    .section-list {
-        list-style: none;
-        padding: 0;
-    }
-
-    .section-item {
-        margin: 1.5rem 0;
-        padding: 1.5rem;
-        border-left: 4px solid var(--primary);
-        transition: transform 0.2s;
-    }
-
-    .section-item:hover {
-        transform: translateX(10px);
-    }
-
-    /* Political section specific */
-    .political .section-item {
-        border-left-color: var(--accent);
-    }
-
-    /* Mobile First Design */
     @media (max-width: 768px) {
         .container {
             padding: 10px;
@@ -137,10 +115,8 @@ SHARED_CSS = """
         }
     }
 
-    @media (min-width: 992px) {
-        .container {
-            padding: 40px;
-        }
+    .political .content-card {
+        border-left: 4px solid var(--accent);
     }
 </style>
 """
@@ -180,7 +156,7 @@ def process_entry(file_path: Path, section: str, subsection: str = None):
         output_path.mkdir(parents=True, exist_ok=True)
         output_file = output_path / f"{base_name}.html"
 
-        # Content extraction
+        # Content processing
         if file_path.suffix == '.md':
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = markdown.markdown(f.read())
@@ -215,6 +191,9 @@ def process_entry(file_path: Path, section: str, subsection: str = None):
             <article class="content">
                 {content}
             </article>
+            <footer style="margin-top: 2rem; color: #666;">
+                Document generated: {datetime.now().strftime('%Y-%m-%d')}
+            </footer>
         </div>
     </div>
 </body>
@@ -225,8 +204,135 @@ def process_entry(file_path: Path, section: str, subsection: str = None):
         logging.error(f"Error processing {file_path}: {str(e)}")
         return None
 
-# Rest of the functions (generate_indexes, main) remain similar with updated styling
-# ... [Previous main and supporting functions with styling updates] ...
+def generate_indexes():
+    try:
+        # Main Index
+        (PUBLIC_DIR / 'index.html').write_text(f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{SITE_TITLE}</title>
+    {SHARED_CSS}
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <a href="legislative/">My Legislative Agenda</a>
+            <a href="journal/">Journal Archive</a>
+        </nav>
+    </header>
+    <div class="container">
+        <div class="content-card">
+            <h1 style="margin-bottom: 1.5rem;">{SITE_TITLE}</h1>
+            <div style="display: grid; gap: 2rem;">
+                <section>
+                    <h2 style="color: {SECTION_CONFIG['legislative']['color']};">Legislative Agenda</h2>
+                    <p>Review current policy proposals and legislative initiatives</p>
+                </section>
+                <section>
+                    <h2 style="color: {SECTION_CONFIG['journal']['subsections']['political']['color']};">Political Memoranda</h2>
+                    <p>Access political analysis and strategy documents</p>
+                </section>
+            </div>
+        </div>
+    </div>
+</body>
+</html>""")
+
+        # Legislative Index
+        (SECTION_CONFIG['legislative']['public'] / 'index.html').write_text(f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Legislative Documents</title>
+    {SHARED_CSS}
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <a href="../">Home</a>
+            <a href="./">Legislative Agenda</a>
+        </nav>
+    </header>
+    <div class="container">
+        <div class="content-card">
+            <h1>Active Legislation</h1>
+            <!-- Add legislative document list here -->
+        </div>
+    </div>
+</body>
+</html>""")
+
+        # Journal Index
+        journal_index = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Journal Archive</title>
+    {SHARED_CSS}
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <a href="../">Home</a>
+            <a href="./">Journal Archive</a>
+        </nav>
+    </header>
+    <div class="container">
+        <div class="content-card">
+            <div style="display: grid; gap: 1.5rem;">
+                <section>
+                    <h2 style="color: {SECTION_CONFIG['journal']['subsections']['personal']['color']};">Personal Journal</h2>
+                    <p>Private reflections and observations</p>
+                </section>
+                <section>
+                    <h2 style="color: {SECTION_CONFIG['journal']['subsections']['political']['color']};">Political Memoranda</h2>
+                    <p>Strategic analyses and policy evaluations</p>
+                </section>
+                <section>
+                    <h2 style="color: {SECTION_CONFIG['journal']['subsections']['law']['color']};">Law Journal</h2>
+                    <p>Legal research and case studies</p>
+                </section>
+            </div>
+        </div>
+    </div>
+</body>
+</html>"""
+        (PUBLIC_DIR / 'journal' / 'index.html').write_text(journal_index)
+
+    except Exception as e:
+        logging.critical(f"Index error: {str(e)}")
+        sys.exit(1)
+
+def main():
+    try:
+        shutil.rmtree(PUBLIC_DIR, ignore_errors=True)
+        PUBLIC_DIR.mkdir(parents=True, exist_ok=True)
+
+        # Process content
+        for section in SECTION_CONFIG:
+            section_dir = SECTION_CONFIG[section]['source']
+            section_dir.mkdir(exist_ok=True)
+            
+            if 'subsections' in SECTION_CONFIG[section]:
+                for subsection in SECTION_CONFIG[section]['subsections']:
+                    subsection_dir = section_dir / subsection
+                    subsection_dir.mkdir(exist_ok=True)
+                    for file in subsection_dir.iterdir():
+                        if file.is_file() and file.suffix in ALLOWED_EXT:
+                            process_entry(file, section, subsection)
+            else:
+                for file in section_dir.iterdir():
+                    if file.is_file() and file.suffix in ALLOWED_EXT:
+                        process_entry(file, section)
+
+        generate_indexes()
+        (PUBLIC_DIR / '.nojekyll').touch()
+        logging.info("Build completed successfully")
+
+    except Exception as e:
+        logging.critical(f"Fatal error: {str(e)}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     logging.basicConfig(
