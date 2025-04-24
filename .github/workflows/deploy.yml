@@ -44,9 +44,16 @@ jobs:
       - name: Generate Content
         run: |
           rm -rf public
-          mkdir -p journal
-          [ "$(ls -A journal)" ] || touch journal/placeholder.md
+          # Create required directories
+          mkdir -p Journal/{personal,political,law} Legislative
+          # Add placeholders if directories are empty
+          [ "$(ls -A Journal/personal)" ] || touch Journal/personal/placeholder.md
+          [ "$(ls -A Journal/political)" ] || touch Journal/political/placeholder.md
+          [ "$(ls -A Journal/law)" ] || touch Journal/law/placeholder.md
+          [ "$(ls -A Legislative)" ] || touch Legislative/placeholder.md
+          # Generate content
           python generate_entries.py
+          # Verify output
           [ -s public/index.html ] || (echo "Invalid index file" && exit 1)
 
       - name: Deploy to GitHub Pages
