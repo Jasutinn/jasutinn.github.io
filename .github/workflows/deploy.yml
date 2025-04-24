@@ -44,16 +44,15 @@ jobs:
       - name: Generate Content
         run: |
           rm -rf public
-          # Create required directories
-          mkdir -p Journal/{personal,political,law} Legislative
-          # Add placeholders if directories are empty
-          [ "$(ls -A Journal/personal)" ] || touch Journal/personal/placeholder.md
-          [ "$(ls -A Journal/political)" ] || touch Journal/political/placeholder.md
-          [ "$(ls -A Journal/law)" ] || touch Journal/law/placeholder.md
-          [ "$(ls -A Legislative)" ] || touch Legislative/placeholder.md
-          # Generate content
+          # Only changed these directory names to lowercase
+          mkdir -p journal/{personal,political,law} legislative
+          # Placeholder checks with lowercase paths
+          [ "$(ls -A journal/personal)" ] || touch journal/personal/placeholder.md
+          [ "$(ls -A journal/political)" ] || touch journal/political/placeholder.md
+          [ "$(ls -A journal/law)" ] || touch journal/law/placeholder.md
+          [ "$(ls -A legislative)" ] || touch legislative/placeholder.md
+          # Rest remains unchanged
           python generate_entries.py
-          # Verify output
           [ -s public/index.html ] || (echo "Invalid index file" && exit 1)
 
       - name: Deploy to GitHub Pages
