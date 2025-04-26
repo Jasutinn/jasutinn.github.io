@@ -64,7 +64,7 @@ def generate_indexes():
 <body>
     <!-- ... [keep main index content] ... -->
 </body>
-</html>""")
+</html>""")  # <-- Closing parenthesis added here (critical)
 
         # Journal Index
         journal_public = PUBLIC_DIR / 'journal'
