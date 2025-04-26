@@ -36,6 +36,7 @@ SECTION_CONFIG = {
 }
 
 SHARED_CSS = """
+<link href="https://fonts.googleapis.com/css2?family=Merriweather&display=swap" rel="stylesheet">
 <style>
     :root {
         --primary: #1A2B4D;
@@ -131,6 +132,9 @@ def process_entry(file_path: Path, section: str, subsection: str = None):
             return None
 
         base_name = sanitize_filename(file_path.stem)
+        if base_name == 'placeholder':
+            return None
+
         config = SECTION_CONFIG[section]
         
         output_path = config['public']
@@ -205,7 +209,7 @@ def process_entry(file_path: Path, section: str, subsection: str = None):
 
 def generate_indexes():
     try:
-        # Main Index (Journal first, Legislative last)
+        # Main Index
         (PUBLIC_DIR / 'index.html').write_text(f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -247,7 +251,15 @@ def generate_indexes():
 </html>""")
 
         # Legislative Index
-        (SECTION_CONFIG['legislative']['public'] / 'index.html').write_text(f"""<!DOCTYPE html>
+        legislative_public = SECTION_CONFIG['legislative']['public']
+        entries = list(legislative_public.glob('*.html'))
+        entries = [e for e in entries if e.name != 'index.html']
+        entries_html = '<ul>' + ''.join(
+            f'<li><a href="{e.name}">{e.stem.replace("-", " ").title()}</a></li>' 
+            for e in entries
+        ) + '</ul>' if entries else '<p>No entries found.</p>'
+
+        (legislative_public / 'index.html').write_text(f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -264,12 +276,14 @@ def generate_indexes():
     <div class="container">
         <div class="content-card">
             <h1>Active Legislation</h1>
+            {entries_html}
         </div>
     </div>
 </body>
 </html>""")
 
-        # Journal Index
+        # Journal Indexes
+        journal_public = SECTION_CONFIG['journal']['public']
         journal_index = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -316,7 +330,42 @@ def generate_indexes():
     </div>
 </body>
 </html>"""
-        (PUBLIC_DIR / 'journal' / 'index.html').write_text(journal_index)
+        (journal_public / 'index.html').write_text(journal_index)
+
+        # Generate subsection indexes
+        for subsection in SECTION_CONFIG['journal']['subsections']:
+            subsection_public = journal_public / subsection
+            entries = list(subsection_public.glob('*.html'))
+            entries = [e for e in entries if e.name != 'index.html']
+            entries_html = '<ul>' + ''.join(
+                f'<li><a href="{e.name}">{e.stem.replace("-", " ").title()}</a></li>' 
+                for e in entries
+            ) + '</ul>' if entries else '<p>No entries found.</p>'
+
+            subsection_config = SECTION_CONFIG['journal']['subsections'][subsection]
+            (subsection_public / 'index.html').write_text(f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{subsection_config['title']}</title>
+    {SHARED_CSS}
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <a href="../../">Home</a>
+            <a href="../">Journal Archive</a>
+            <a href="./" class="active">{subsection_config['title']}</a>
+        </nav>
+    </header>
+    <div class="container">
+        <div class="content-card">
+            <h1>{subsection_config['title']}</h1>
+            {entries_html}
+        </div>
+    </div>
+</body>
+</html>""")
 
     except Exception as e:
         logging.critical(f"Index error: {str(e)}")
@@ -327,7 +376,6 @@ def main():
         shutil.rmtree(PUBLIC_DIR, ignore_errors=True)
         PUBLIC_DIR.mkdir(parents=True, exist_ok=True)
 
-        # Process content
         for section in SECTION_CONFIG:
             section_dir = SECTION_CONFIG[section]['source']
             section_dir.mkdir(exist_ok=True)
