@@ -46,12 +46,20 @@ jobs:
         run: |
           rm -rf public
           mkdir -p journal/{personal,political,legal} legislative
-          [ "$(ls -A journal/personal)" ] || touch journal/personal/.placeholder
-          [ "$(ls -A journal/political)" ] || touch journal/political/.placeholder
-          [ "$(ls -A journal/legal)" ] || touch journal/legal/.placeholder
-          [ "$(ls -A legislative)" ] || touch legislative/.placeholder
+          
+          # Create sample content if empty
+          if [ ! -f journal/political/test.md ]; then
+            echo "# Sample Political Entry" > journal/political/test.md
+          fi
+          if [ ! -f legislative/bill.md ]; then
+            echo "# Sample Legislation" > legislative/bill.md
+          fi
+
           python generate_entries.py
-          [ -s public/index.html ] || (echo "Invalid index file" && exit 1)
+          
+          # Validate output
+          [ -s public/index.html ] || (echo "Missing index.html" && exit 1)
+          [ -s public/journal/political/test.html ] || (echo "Content generation failed" && exit 1)
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
