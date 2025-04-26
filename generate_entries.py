@@ -1,4 +1,3 @@
-# ===== FULL IMPLEMENTATION =====
 import os
 import string
 import sys
@@ -30,7 +29,7 @@ SECTION_CONFIG = {
         'title': 'Journal Archive',
         'subsections': {
             'personal': {'title': 'Personal Journal', 'color': '#4A4A4A'},
-            'political': {'title': 'Political Memoranda', 'color': '#DC143C'},
+            'political': {'title': 'Political Journal', 'color': '#DC143C'},  # Changed title
             'law': {'title': 'Law Journal', 'color': '#2B4D7A'}
         }
     }
@@ -156,7 +155,6 @@ def process_entry(file_path: Path, section: str, subsection: str = None):
         output_path.mkdir(parents=True, exist_ok=True)
         output_file = output_path / f"{base_name}.html"
 
-        # Content processing
         if file_path.suffix == '.md':
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = markdown.markdown(f.read())
@@ -170,7 +168,6 @@ def process_entry(file_path: Path, section: str, subsection: str = None):
             with open(file_path, 'r', encoding='utf-8') as f:
                 content = f"<pre>{f.read()}</pre>"
 
-        # HTML generation
         html = f"""<!DOCTYPE html>
 <html lang="en" {section_class}>
 <head>
@@ -226,11 +223,19 @@ def generate_indexes():
             <h1 style="margin-bottom: 1.5rem;">{SITE_TITLE}</h1>
             <div style="display: grid; gap: 2rem;">
                 <section>
-                    <h2 style="color: {SECTION_CONFIG['legislative']['color']};">Legislative Agenda</h2>
+                    <h2 style="color: {SECTION_CONFIG['legislative']['color']};">
+                        <a href="legislative/" style="text-decoration: none; color: inherit;">
+                            Legislative Agenda
+                        </a>
+                    </h2>
                     <p>Review current policy proposals and legislative initiatives</p>
                 </section>
                 <section>
-                    <h2 style="color: {SECTION_CONFIG['journal']['subsections']['political']['color']};">Political Memoranda</h2>
+                    <h2 style="color: {SECTION_CONFIG['journal']['subsections']['political']['color']};">
+                        <a href="journal/" style="text-decoration: none; color: inherit;">
+                            Journal Archive
+                        </a>
+                    </h2>
                     <p>Access political analysis and strategy documents</p>
                 </section>
             </div>
@@ -257,7 +262,6 @@ def generate_indexes():
     <div class="container">
         <div class="content-card">
             <h1>Active Legislation</h1>
-            <!-- Add legislative document list here -->
         </div>
     </div>
 </body>
@@ -282,15 +286,27 @@ def generate_indexes():
         <div class="content-card">
             <div style="display: grid; gap: 1.5rem;">
                 <section>
-                    <h2 style="color: {SECTION_CONFIG['journal']['subsections']['personal']['color']};">Personal Journal</h2>
+                    <h2 style="color: {SECTION_CONFIG['journal']['subsections']['personal']['color']};">
+                        <a href="personal/" style="text-decoration: none; color: inherit;">
+                            Personal Journal
+                        </a>
+                    </h2>
                     <p>Private reflections and observations</p>
                 </section>
                 <section>
-                    <h2 style="color: {SECTION_CONFIG['journal']['subsections']['political']['color']};">Political Memoranda</h2>
+                    <h2 style="color: {SECTION_CONFIG['journal']['subsections']['political']['color']};">
+                        <a href="political/" style="text-decoration: none; color: inherit;">
+                            Political Journal
+                        </a>
+                    </h2>
                     <p>Strategic analyses and policy evaluations</p>
                 </section>
                 <section>
-                    <h2 style="color: {SECTION_CONFIG['journal']['subsections']['law']['color']};">Law Journal</h2>
+                    <h2 style="color: {SECTION_CONFIG['journal']['subsections']['law']['color']};">
+                        <a href="law/" style="text-decoration: none; color: inherit;">
+                            Law Journal
+                        </a>
+                    </h2>
                     <p>Legal research and case studies</p>
                 </section>
             </div>
