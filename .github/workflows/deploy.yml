@@ -44,18 +44,38 @@ jobs:
 
       - name: Generate Content
         run: |
+          # Clean and create directories
           rm -rf public
           mkdir -p journal/{personal,political,legal} legislative
           
-          # Create test files
-          echo "# Test Entry" > journal/political/test.md
-          echo "# Test Bill" > legislative/bill.md
-      
+          # Create mandatory test files (if missing)
+          if [ ! -f journal/political/test.md ]; then
+            echo "# Test Political Entry" > journal/political/test.md
+            echo "This tests responsive layouts" >> journal/political/test.md
+          fi
+          if [ ! -f legislative/bill.md ]; then
+            echo "# Test Legislation" > legislative/bill.md
+            echo "Sample bill content" >> legislative/bill.md
+          fi
+
+          # Generate HTML
           python generate_entries.py
-    
-    # Validate output
-    [ -s public/index.html ] || (echo "Index missing"; exit 1)
-    [ -s public/journal/political/test.html ] || (echo "Content missing"; exit 1)
+          
+          # Validate critical files exist
+          if [ ! -s public/index.html ]; then
+            echo "❌ Main index.html missing or empty"
+            exit 1
+          fi
+          if [ ! -s public/journal/political/test.html ]; then
+            echo "❌ Journal content not generated"
+            exit 1
+          fi
+          if [ ! -s public/legislative/bill.html ]; then
+            echo "❌ Legislative content not generated"
+            exit 1
+          fi
+          echo "✅ All content generated successfully"
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
