@@ -39,16 +39,16 @@ jobs:
             python-docx==1.1.2 \
             PyMuPDF==1.24.4
           pip install pip-audit
-          pip-audit || echo "Audit completed - review findings above"
+          pip-audit
 
       - name: Generate Content
         run: |
           rm -rf public
           mkdir -p journal/{personal,political,legal} legislative
-          [ "$(ls -A journal/personal)" ] || touch journal/personal/placeholder.md
-          [ "$(ls -A journal/political)" ] || touch journal/political/placeholder.md
-          [ "$(ls -A journal/legal)" ] || touch journal/legal/placeholder.md
-          [ "$(ls -A legislative)" ] || touch legislative/placeholder.md
+          [ "$(ls -A journal/personal)" ] || touch journal/personal/.placeholder
+          [ "$(ls -A journal/political)" ] || touch journal/political/.placeholder
+          [ "$(ls -A journal/legal)" ] || touch journal/legal/.placeholder
+          [ "$(ls -A legislative)" ] || touch legislative/.placeholder
           python generate_entries.py
           [ -s public/index.html ] || (echo "Invalid index file" && exit 1)
 
