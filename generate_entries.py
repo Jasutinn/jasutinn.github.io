@@ -38,7 +38,87 @@ SECTION_CONFIG = {
 SHARED_CSS = """
 <link href="https://fonts.googleapis.com/css2?family=Merriweather&display=swap" rel="stylesheet">
 <style>
-    /* ... (keep existing CSS unchanged) ... */
+    :root {
+        --primary: #1A2B4D;
+        --accent: #DC143C;
+        --background: #F5F5DC;
+        --text: #333333;
+        --border: #D4AF37;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Merriweather', serif;
+    }
+
+    body {
+        background: var(--background);
+        color: var(--text);
+        line-height: 1.6;
+        min-height: 100vh;
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .header {
+        background: var(--primary);
+        color: white;
+        padding: 1rem 0;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        justify-content: center;
+    }
+
+    .nav a {
+        color: white;
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        transition: opacity 0.3s;
+    }
+
+    .nav a.active {
+        background: rgba(255,255,255,0.1);
+        border-radius: 4px;
+    }
+
+    .nav a:hover {
+        opacity: 0.9;
+    }
+
+    .content-card {
+        background: white;
+        border-radius: 8px;
+        padding: 2rem;
+        margin: 2rem 0;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    @media (max-width: 768px) {
+        .container {
+            padding: 10px;
+        }
+        
+        .nav {
+            flex-direction: column;
+            text-align: center;
+            gap: 0.5rem;
+        }
+        
+        .content-card {
+            padding: 1rem;
+        }
+    }
 </style>
 """
 
@@ -77,8 +157,47 @@ def process_entry(file_path: Path, section: str, subsection: str = None):
         output_path.mkdir(parents=True, exist_ok=True)
         output_file = output_path / f"{base_name}.html"
 
-        # ... (keep existing content processing logic unchanged) ...
+        if file_path.suffix == '.md':
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = markdown.markdown(f.read())
+        elif file_path.suffix == '.docx':
+            doc = docx.Document(file_path)
+            content = "".join(f"<p>{p.text}</p>" for p in doc.paragraphs if p.text)
+        elif file_path.suffix == '.pdf':
+            with pdfplumber.open(file_path) as pdf:
+                content = "".join(f"<p>{p.extract_text()}</p>" for p in pdf.pages if p.extract_text())
+        else:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                content = f"<pre>{f.read()}</pre>"
 
+        html = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{base_name.replace('-', ' ').title()} | {current_page}</title>
+    {SHARED_CSS}
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            {"".join(f'<a href="{link}"{" class=active" if title == current_page else ""}>{title}</a>' for link, title in nav_links)}
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="content-card">
+            <h1>{base_name.replace('-', ' ').title()}</h1>
+            <article class="content">
+                {content}
+            </article>
+            <footer style="margin-top: 2rem; color: #666;">
+                Document generated: {datetime.now().strftime('%Y-%m-%d')}
+            </footer>
+        </div>
+    </div>
+</body>
+</html>"""
         output_file.write_text(html)
         return base_name
     except Exception as e:
@@ -87,13 +206,50 @@ def process_entry(file_path: Path, section: str, subsection: str = None):
 
 def generate_indexes():
     try:
-        # Main Index (unchanged)
-        (PUBLIC_DIR / 'index.html').write_text(f"""<!DOCTYPE html>...""")
+        # Main Index
+        (PUBLIC_DIR / 'index.html').write_text(f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{SITE_TITLE}</title>
+    {SHARED_CSS}
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <a href="journal/">Journal Archive</a>
+            <a href="legislative/">My Legislative Agenda</a>
+        </nav>
+    </header>
+    <div class="container">
+        <div class="content-card">
+            <h1 style="margin-bottom: 1.5rem;">{SITE_TITLE}</h1>
+            <div style="display: grid; gap: 2rem;">
+                <section>
+                    <h2 style="color: {SECTION_CONFIG['journal']['subsections']['political']['color']};">
+                        <a href="journal/" style="text-decoration: none; color: inherit;">
+                            Journal Archive
+                        </a>
+                    </h2>
+                    <p>Strategic analyses and policy evaluations</p>
+                </section>
+                <section>
+                    <h2 style="color: {SECTION_CONFIG['legislative']['color']};">
+                        <a href="legislative/" style="text-decoration: none; color: inherit;">
+                            My Legislative Agenda
+                        </a>
+                    </h2>
+                    <p>Personal policy proposals and legislative tracking</p>
+                </section>
+            </div>
+        </div>
+    </div>
+</body>
+</html>""")
 
         # Legislative Index
         legislative_public = SECTION_CONFIG['legislative']['public']
-        legislative_public.mkdir(parents=True, exist_ok=True)  # FIX: Create directory
-
+        legislative_public.mkdir(parents=True, exist_ok=True)
         entries = list(legislative_public.glob('*.html'))
         entries = [e for e in entries if e.name != 'index.html']
         entries_html = '<ul>' + ''.join(
@@ -101,17 +257,83 @@ def generate_indexes():
             for e in entries
         ) + '</ul>' if entries else '<p>No entries found.</p>'
 
-        (legislative_public / 'index.html').write_text(f"""<!DOCTYPE html>...""")
+        (legislative_public / 'index.html').write_text(f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Legislative Agenda</title>
+    {SHARED_CSS}
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <a href="../">Home</a>
+            <a href="./" class="active">My Legislative Agenda</a>
+        </nav>
+    </header>
+    <div class="container">
+        <div class="content-card">
+            <h1>Active Legislation</h1>
+            {entries_html}
+        </div>
+    </div>
+</body>
+</html>""")
 
-        # Journal Indexes
+        # Journal Index
         journal_public = SECTION_CONFIG['journal']['public']
-        (journal_public / 'index.html').write_text(f"""<!DOCTYPE html>...""")
+        journal_index = f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Journal Archive</title>
+    {SHARED_CSS}
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <a href="../">Home</a>
+            <a href="./" class="active">Journal Archive</a>
+        </nav>
+    </header>
+    <div class="container">
+        <div class="content-card">
+            <div style="display: grid; gap: 1.5rem;">
+                <section>
+                    <h2 style="color: {SECTION_CONFIG['journal']['subsections']['personal']['color']};">
+                        <a href="personal/" style="text-decoration: none; color: inherit;">
+                            Personal Journal
+                        </a>
+                    </h2>
+                    <p>Private reflections and observations</p>
+                </section>
+                <section>
+                    <h2 style="color: {SECTION_CONFIG['journal']['subsections']['political']['color']};">
+                        <a href="political/" style="text-decoration: none; color: inherit;">
+                            Political Journal
+                        </a>
+                    </h2>
+                    <p>Strategic analyses and policy evaluations</p>
+                </section>
+                <section>
+                    <h2 style="color: {SECTION_CONFIG['journal']['subsections']['legal']['color']};">
+                        <a href="legal/" style="text-decoration: none; color: inherit;">
+                            Legal Journal
+                        </a>
+                    </h2>
+                    <p>Legal research and case studies</p>
+                </section>
+            </div>
+        </div>
+    </div>
+</body>
+</html>"""
+        (journal_public / 'index.html').write_text(journal_index)
 
         # Generate subsection indexes
         for subsection in SECTION_CONFIG['journal']['subsections']:
             subsection_public = journal_public / subsection
-            subsection_public.mkdir(parents=True, exist_ok=True)  # FIX: Create directory
-
+            subsection_public.mkdir(parents=True, exist_ok=True)
             entries = list(subsection_public.glob('*.html'))
             entries = [e for e in entries if e.name != 'index.html']
             entries_html = '<ul>' + ''.join(
@@ -120,7 +342,29 @@ def generate_indexes():
             ) + '</ul>' if entries else '<p>No entries found.</p>'
 
             subsection_config = SECTION_CONFIG['journal']['subsections'][subsection]
-            (subsection_public / 'index.html').write_text(f"""<!DOCTYPE html>...""")
+            (subsection_public / 'index.html').write_text(f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{subsection_config['title']}</title>
+    {SHARED_CSS}
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <a href="../../">Home</a>
+            <a href="../">Journal Archive</a>
+            <a href="./" class="active">{subsection_config['title']}</a>
+        </nav>
+    </header>
+    <div class="container">
+        <div class="content-card">
+            <h1>{subsection_config['title']}</h1>
+            {entries_html}
+        </div>
+    </div>
+</body>
+</html>""")
 
     except Exception as e:
         logging.critical(f"Index error: {str(e)}")
