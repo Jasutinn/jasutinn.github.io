@@ -205,7 +205,7 @@ def process_entry(file_path: Path, section: str, subsection: str = None):
 
 def generate_indexes():
     try:
-        # Main Index
+        # Main Index (Journal first, Legislative last)
         (PUBLIC_DIR / 'index.html').write_text(f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -216,8 +216,8 @@ def generate_indexes():
 <body>
     <header class="header">
         <nav class="nav">
-            <a href="legislative/">My Legislative Agenda</a>
             <a href="journal/">Journal Archive</a>
+            <a href="legislative/">My Legislative Agenda</a>
         </nav>
     </header>
     <div class="container">
@@ -225,20 +225,20 @@ def generate_indexes():
             <h1 style="margin-bottom: 1.5rem;">{SITE_TITLE}</h1>
             <div style="display: grid; gap: 2rem;">
                 <section>
-                    <h2 style="color: {SECTION_CONFIG['legislative']['color']};">
-                        <a href="legislative/" style="text-decoration: none; color: inherit;">
-                            Legislative Agenda
-                        </a>
-                    </h2>
-                    <p>Review current policy proposals and legislative initiatives</p>
-                </section>
-                <section>
                     <h2 style="color: {SECTION_CONFIG['journal']['subsections']['political']['color']};">
                         <a href="journal/" style="text-decoration: none; color: inherit;">
-                            Journal Collections
+                            Journal Archive
                         </a>
                     </h2>
                     <p>Strategic analyses and policy evaluations</p>
+                </section>
+                <section>
+                    <h2 style="color: {SECTION_CONFIG['legislative']['color']};">
+                        <a href="legislative/" style="text-decoration: none; color: inherit;">
+                            My Legislative Agenda
+                        </a>
+                    </h2>
+                    <p>Personal policy proposals and legislative tracking</p>
                 </section>
             </div>
         </div>
@@ -251,14 +251,14 @@ def generate_indexes():
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Active Legislation</title>
+    <title>My Legislative Agenda</title>
     {SHARED_CSS}
 </head>
 <body>
     <header class="header">
         <nav class="nav">
             <a href="../">Home</a>
-            <a href="./" class="active">Legislative Agenda</a>
+            <a href="./" class="active">My Legislative Agenda</a>
         </nav>
     </header>
     <div class="container">
