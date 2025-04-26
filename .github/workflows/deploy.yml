@@ -44,14 +44,11 @@ jobs:
       - name: Generate Content
         run: |
           rm -rf public
-          # Only changed these directory names to lowercase
           mkdir -p journal/{personal,political,law} legislative
-          # Placeholder checks with lowercase paths
           [ "$(ls -A journal/personal)" ] || touch journal/personal/placeholder.md
           [ "$(ls -A journal/political)" ] || touch journal/political/placeholder.md
           [ "$(ls -A journal/law)" ] || touch journal/law/placeholder.md
           [ "$(ls -A legislative)" ] || touch legislative/placeholder.md
-          # Rest remains unchanged
           python generate_entries.py
           [ -s public/index.html ] || (echo "Invalid index file" && exit 1)
 
