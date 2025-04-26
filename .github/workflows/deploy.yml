@@ -33,7 +33,7 @@ jobs:
 
       - name: Install Python Packages
         run: |
-          pip install --upgrade setuptools>=65.5.1  # Security fix
+          pip install --upgrade setuptools>=65.5.1
           pip install \
             markdown==3.5.2 \
             pdfplumber==0.11.0 \
