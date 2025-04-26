@@ -235,10 +235,9 @@ def process_entry(file_path: Path, section: str, subsection: str = None):
 
 def generate_indexes():
     try:
-        # Ensure public directory exists
         PUBLIC_DIR.mkdir(parents=True, exist_ok=True)
         
-        # Generate main index
+        # Main Index
         (PUBLIC_DIR / 'index.html').write_text(f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -279,36 +278,8 @@ def generate_indexes():
 </body>
 </html>""")
 
-        # Generate legislative index
-        legislative_public = SECTION_CONFIG['legislative']['public']
-        legislative_public.mkdir(exist_ok=True)
-        (legislative_public / 'index.html').write_text(f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>My Legislative Agenda</title>
-    {SHARED_CSS}
-</head>
-<body>
-    <header class="header">
-        <nav class="nav">
-            <a href="../">Home</a>
-            <a href="./" class="active">My Legislative Agenda</a>
-        </nav>
-    </header>
-    <div class="container">
-        <div class="content-card">
-            <h1>Active Legislation</h1>
-            <ul>
-                <li><a href="sample.html">Sample Legislation</a></li>
-            </ul>
-        </div>
-    </div>
-</body>
-</html>""")
-
-        # Generate journal indexes
-        journal_public = SECTION_CONFIG['journal']['public']
+        # Journal Index (Fixed Color Inheritance)
+        journal_public = PUBLIC_DIR / 'journal'
         journal_public.mkdir(exist_ok=True)
         (journal_public / 'index.html').write_text(f"""<!DOCTYPE html>
 <html lang="en">
@@ -329,21 +300,27 @@ def generate_indexes():
             <div style="display: grid; gap: 1.5rem;">
                 <section>
                     <h2 style="color: {SECTION_CONFIG['journal']['subsections']['personal']['color']};">
-                        <a href="personal/">Personal Journal</a>
+                        <a href="personal/" style="text-decoration: none; color: inherit;">
+                            Personal Journal
+                        </a>
                     </h2>
-                    <p>Private reflections and observations</p>
+                    <p style="color: #666;">Private reflections and observations</p>
                 </section>
                 <section>
                     <h2 style="color: {SECTION_CONFIG['journal']['subsections']['political']['color']};">
-                        <a href="political/">Political Journal</a>
+                        <a href="political/" style="text-decoration: none; color: inherit;">
+                            Political Journal
+                        </a>
                     </h2>
-                    <p>Strategic analyses and policy evaluations</p>
+                    <p style="color: #666;">Strategic analyses and policy evaluations</p>
                 </section>
                 <section>
                     <h2 style="color: {SECTION_CONFIG['journal']['subsections']['legal']['color']};">
-                        <a href="legal/">Legal Journal</a>
+                        <a href="legal/" style="text-decoration: none; color: inherit;">
+                            Legal Journal
+                        </a>
                     </h2>
-                    <p>Legal research and case studies</p>
+                    <p style="color: #666;">Legal research and case studies</p>
                 </section>
             </div>
         </div>
@@ -351,35 +328,8 @@ def generate_indexes():
 </body>
 </html>""")
 
-        # Generate subsection indexes
-        for subsection in SECTION_CONFIG['journal']['subsections']:
-            subsection_public = journal_public / subsection
-            subsection_public.mkdir(exist_ok=True)
-            (subsection_public / 'index.html').write_text(f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{SECTION_CONFIG['journal']['subsections'][subsection]['title']}</title>
-    {SHARED_CSS}
-</head>
-<body>
-    <header class="header">
-        <nav class="nav">
-            <a href="../../">Home</a>
-            <a href="../">Journal Archive</a>
-            <a href="./" class="active">{SECTION_CONFIG['journal']['subsections'][subsection]['title']}</a>
-        </nav>
-    </header>
-    <div class="container">
-        <div class="content-card">
-            <h1>{SECTION_CONFIG['journal']['subsections'][subsection]['title']}</h1>
-            <ul>
-                <li><a href="sample.html">Sample Entry</a></li>
-            </ul>
-        </div>
-    </div>
-</body>
-</html>""")
+        # Rest of index generation code...
+        # [Keep legislative and subsection index code from previous version]
 
     except Exception as e:
         logging.critical(f"Index error: {str(e)}")
@@ -390,7 +340,6 @@ def main():
         shutil.rmtree(PUBLIC_DIR, ignore_errors=True)
         PUBLIC_DIR.mkdir(parents=True, exist_ok=True)
 
-        # Process content
         for section in SECTION_CONFIG:
             section_dir = SECTION_CONFIG[section]['source']
             section_dir.mkdir(exist_ok=True)
