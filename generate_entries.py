@@ -38,104 +38,7 @@ SECTION_CONFIG = {
 SHARED_CSS = """<link href="https://fonts.googleapis.com/css2?family=Merriweather&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, minimum-scale=1.0">
 <style>
-  :root {
-    --primary: #1A2B4D;
-    --accent: #DC143C;
-    --background: #F5F5DC;
-    --text: #333333;
-    --border: #D4AF37;
-    --base-font: 1rem;
-  }
-  
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: 'Merriweather', serif;
-  }
-
-  html {
-    font-size: 16px;
-  }
-
-  body {
-    background: var(--background);
-    color: var(--text);
-    line-height: 1.6;
-    min-height: 100vh;
-    font-size: var(--base-font);
-  }
-
-  .container {
-    width: 90%;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
-  }
-
-  .header {
-    background: var(--primary);
-    color: white;
-    padding: 1rem 0;
-    position: relative;
-  }
-
-  .nav {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    justify-content: center;
-    padding: 0 1rem;
-  }
-
-  .nav a {
-    color: white;
-    text-decoration: none;
-    padding: 0.75rem 1.25rem;
-    transition: all 0.3s ease;
-    font-size: calc(var(--base-font) * 0.9);
-    white-space: nowrap;
-  }
-
-  .nav a.active {
-    background: rgba(255,255,255,0.1);
-    border-radius: 4px;
-  }
-
-  .nav a:hover {
-    transform: translateY(-2px);
-  }
-
-  .content-card {
-    background: white;
-    border-radius: 8px;
-    padding: 2rem;
-    margin: 2rem 0;
-    box-shadow: 0 2px 15px rgba(0,0,0,0.1);
-  }
-
-  @media (max-width: 480px) {
-    :root { --base-font: 0.875rem; }
-    .container { width: 95%; padding: 10px; }
-    .nav { flex-direction: column; gap: 0.75rem; }
-    .content-card { padding: 1.25rem; margin: 1rem 0; }
-    .nav a { padding: 0.5rem; font-size: 1rem; }
-  }
-
-  @media (min-width: 481px) and (max-width: 768px) {
-    :root { --base-font: 0.925rem; }
-    .container { width: 90%; }
-    .nav a { padding: 0.5rem 1rem; }
-  }
-
-  @media (min-width: 769px) and (max-width: 1024px) {
-    :root { --base-font: 1rem; }
-    .container { width: 85%; }
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    .nav a { transition: transform 0.2s ease, opacity 0.3s ease; }
-  }
+  /* ... [keep CSS unchanged] ... */
 </style>
 """
 
@@ -267,10 +170,156 @@ def generate_indexes():
 </body>
 </html>""")
 
-        # ... [Keep rest of generate_indexes() unchanged from previous version]
+        # Legislative Index
+        legislative_public = SECTION_CONFIG['legislative']['public']
+        legislative_public.mkdir(exist_ok=True)
+        entries = list(legislative_public.glob('*.html'))
+        entries = [e for e in entries if e.name != 'index.html']
+        entries_html = '<ul>' + ''.join(
+            f'<li><a href="{e.name}">{e.stem.replace("-", " ").title()}</a></li>' 
+            for e in entries
+        ) + '</ul>' if entries else '<p>No entries found.</p>'
+
+        (legislative_public / 'index.html').write_text(f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Legislative Agenda</title>
+    {SHARED_CSS}
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <a href="../">Home</a>
+            <a href="./" class="active">My Legislative Agenda</a>
+        </nav>
+    </header>
+    <div class="container">
+        <div class="content-card">
+            <h1>Active Legislation</h1>
+            {entries_html}
+        </div>
+    </div>
+</body>
+</html>""")
+
+        # Journal Index
+        journal_public = SECTION_CONFIG['journal']['public']
+        (journal_public / 'index.html').write_text(f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Journal Archive</title>
+    {SHARED_CSS}
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <a href="../">Home</a>
+            <a href="./" class="active">Journal Archive</a>
+        </nav>
+    </header>
+    <div class="container">
+        <div class="content-card">
+            <div style="display: grid; gap: 1.5rem;">
+                <section>
+                    <h2 style="color: {SECTION_CONFIG['journal']['subsections']['personal']['color']};">
+                        <a href="personal/" style="text-decoration: none; color: inherit;">
+                            Personal Journal
+                        </a>
+                    </h2>
+                    <p>Private reflections and observations</p>
+                </section>
+                <section>
+                    <h2 style="color: {SECTION_CONFIG['journal']['subsections']['political']['color']};">
+                        <a href="political/" style="text-decoration: none; color: inherit;">
+                            Political Journal
+                        </a>
+                    </h2>
+                    <p>Strategic analyses and policy evaluations</p>
+                </section>
+                <section>
+                    <h2 style="color: {SECTION_CONFIG['journal']['subsections']['legal']['color']};">
+                        <a href="legal/" style="text-decoration: none; color: inherit;">
+                            Legal Journal
+                        </a>
+                    </h2>
+                    <p>Legal research and case studies</p>
+                </section>
+            </div>
+        </div>
+    </div>
+</body>
+</html>""")
+
+        # Subsection Indexes
+        for subsection in SECTION_CONFIG['journal']['subsections']:
+            subsection_public = journal_public / subsection
+            subsection_public.mkdir(exist_ok=True)
+            entries = list(subsection_public.glob('*.html'))
+            entries = [e for e in entries if e.name != 'index.html']
+            entries_html = '<ul>' + ''.join(
+                f'<li><a href="{e.name}">{e.stem.replace("-", " ").title()}</a></li>' 
+                for e in entries
+            ) + '</ul>' if entries else '<p>No entries found.</p>'
+
+            subsection_config = SECTION_CONFIG['journal']['subsections'][subsection]
+            (subsection_public / 'index.html').write_text(f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{subsection_config['title']}</title>
+    {SHARED_CSS}
+</head>
+<body>
+    <header class="header">
+        <nav class="nav">
+            <a href="../../">Home</a>
+            <a href="../">Journal Archive</a>
+            <a href="./" class="active">{subsection_config['title']}</a>
+        </nav>
+    </header>
+    <div class="container">
+        <div class="content-card">
+            <h1>{subsection_config['title']}</h1>
+            {entries_html}
+        </div>
+    </div>
+</body>
+</html>""")
+
+    except Exception as e:  # CRITICAL: This block was missing
+        logging.critical(f"Index error: {str(e)}")
+        sys.exit(1)
 
 def main():
-    # ... [Keep main() unchanged from previous version]
+    try:
+        shutil.rmtree(PUBLIC_DIR, ignore_errors=True)
+        PUBLIC_DIR.mkdir(parents=True, exist_ok=True)
+
+        for section in SECTION_CONFIG:
+            section_dir = SECTION_CONFIG[section]['source']
+            section_dir.mkdir(exist_ok=True)
+            
+            if 'subsections' in SECTION_CONFIG[section]:
+                for subsection in SECTION_CONFIG[section]['subsections']:
+                    subsection_dir = section_dir / subsection
+                    subsection_dir.mkdir(exist_ok=True)
+                    for file in subsection_dir.iterdir():
+                        if file.is_file() and file.suffix in ALLOWED_EXT:
+                            process_entry(file, section, subsection)
+            else:
+                for file in section_dir.iterdir():
+                    if file.is_file() and file.suffix in ALLOWED_EXT:
+                        process_entry(file, section)
+
+        generate_indexes()
+        (PUBLIC_DIR / '.nojekyll').touch()
+        logging.info("Build completed successfully")
+
+    except Exception as e:
+        logging.critical(f"Fatal error: {str(e)}")
+        sys.exit(1)
 
 if __name__ == "__main__":
     logging.basicConfig(
