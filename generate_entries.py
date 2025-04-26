@@ -50,8 +50,16 @@ def process_entry(file_path: Path, section: str, subsection: str = None):
     # ... [your original process_entry code unchanged] ...
 
 def generate_indexes():
-    try:  # <- ONLY FIX: Added 4-space indent here
+    try:  # <-- FIXED: Added 4-space indent
         PUBLIC_DIR.mkdir(parents=True, exist_ok=True)
+        # ... rest of code ...
+        
+        # ALL CODE INSIDE generate_indexes() MUST BE INDENTED LIKE THIS
+        # (keep your original content unchanged)
+        
+    except Exception as e:  # <-- Also indented under "try"
+        logging.critical(f"Index error: {str(e)}")
+        sys.exit(1)
         
         # Main Index - YOUR ORIGINAL CONTENT
         (PUBLIC_DIR / 'index.html').write_text(f"""<!DOCTYPE html>
