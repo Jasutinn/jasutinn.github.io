@@ -44,53 +44,43 @@ jobs:
 
       - name: Generate Content
         run: |
-          # Clean and initialize directories
+          # Clean workspace
           rm -rf public
-          mkdir -p \
-            journal/personal \
-            journal/political \
-            journal/legal \
-            legislative
+          mkdir -p public
 
-          # Create sample content for ALL sections
-          echo "# Personal Reflection" > journal/personal/sample.md
-          echo "## Private thoughts\n- Morning routine\n- Policy ideas" >> journal/personal/sample.md
+          # Create mandatory sample content
+          mkdir -p journal/{personal,political,legal} legislative
+          echo "# Sample Entry" > journal/personal/sample.md
+          echo "# Sample Analysis" > journal/political/sample.md
+          echo "# Legal Case" > journal/legal/sample.md
+          echo "# Proposed Bill" > legislative/sample.md
 
-          echo "# Political Analysis" > journal/political/sample.md
-          echo "## Current Affairs\n1. Budget review\n2. Diplomatic meetings" >> journal/political/sample.md
-
-          echo "# Legal Case Study" > journal/legal/sample.md
-          echo "## Court Proceedings\n- Case #2024-01\n- Precedent analysis" >> journal/legal/sample.md
-
-          echo "# Legislative Proposal" > legislative/sample.md
-          echo "## New Bill\n- Tax reform\n- Education funding" >> legislative/sample.md
-
-          # Generate HTML content
+          # Generate HTML files
           python generate_entries.py
 
-          # Validate design application in ALL sections
+          # Validate all critical files
           check_files=(
             "/index.html"
             "/journal/index.html"
             "/journal/personal/index.html"
-            "/journal/political/index.html"
+            "/journal/political/index.html" 
             "/journal/legal/index.html"
             "/legislative/index.html"
             "/journal/personal/sample.html"
             "/journal/political/sample.html"
-            "/journal/legal/sample.html" 
+            "/journal/legal/sample.html"
             "/legislative/sample.html"
           )
 
           for file in "${check_files[@]}"; do
             if [ ! -s "public${file}" ]; then
-              echo "❌ Missing design in: ${file}"
+              echo "❌ Missing file: public${file}"
               exit 1
             fi
           done
 
-          echo "✅ Verified design consistency across:"
-          printf " - %s\n" "${check_files[@]}"
+          echo "✅ Verified all files:"
+          tree public
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
