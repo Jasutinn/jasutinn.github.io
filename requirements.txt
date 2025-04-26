@@ -1,5 +1,5 @@
 markdown==3.5.2
 pdfplumber==0.11.0
 python-docx==1.1.2
-beautifulsoup4==4.12.3
 PyMuPDF==1.24.4
+setuptools>=65.5.1  # Fixes PYSEC-2022-43012
