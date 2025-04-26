@@ -63,7 +63,7 @@ jobs:
             "/index.html"
             "/journal/index.html"
             "/journal/personal/index.html"
-            "/journal/political/index.html" 
+            "/journal/political/index.html"
             "/journal/legal/index.html"
             "/legislative/index.html"
             "/journal/personal/sample.html"
