@@ -35,90 +35,77 @@ SECTION_CONFIG = {
     }
 }
 
-SHARED_CSS = """
-<link href="https://fonts.googleapis.com/css2?family=Merriweather&display=swap" rel="stylesheet">
+SHARED_CSS = """<link href="https://fonts.googleapis.com/css2?family=Merriweather&display=swap" rel="stylesheet">
 <style>
-    :root {
-        --primary: #1A2B4D;
-        --accent: #DC143C;
-        --background: #F5F5DC;
-        --text: #333333;
-        --border: #D4AF37;
-    }
-
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: 'Merriweather', serif;
-    }
-
-    body {
-        background: var(--background);
-        color: var(--text);
-        line-height: 1.6;
-        min-height: 100vh;
-    }
-
+  :root {
+    --primary: #1A2B4D;
+    --accent: #DC143C;
+    --background: #F5F5DC;
+    --text: #333333;
+    --border: #D4AF37;
+  }
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Merriweather', serif;
+  }
+  body {
+    background: var(--background);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  .header {
+    background: var(--primary);
+    color: white;
+    padding: 1rem 0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+  .nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    justify-content: center;
+  }
+  .nav a {
+    color: white;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    transition: opacity 0.3s;
+  }
+  .nav a.active {
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+  }
+  .nav a:hover {
+    opacity: 0.9;
+  }
+  .content-card {
+    background: white;
+    border-radius: 8px;
+    padding: 2rem;
+    margin: 2rem 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+  }
+  @media (max-width: 768px) {
     .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 20px;
+      padding: 10px;
     }
-
-    .header {
-        background: var(--primary);
-        color: white;
-        padding: 1rem 0;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-
     .nav {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1.5rem;
-        justify-content: center;
+      flex-direction: column;
+      text-align: center;
+      gap: 0.5rem;
     }
-
-    .nav a {
-        color: white;
-        text-decoration: none;
-        padding: 0.5rem 1rem;
-        transition: opacity 0.3s;
-    }
-
-    .nav a.active {
-        background: rgba(255,255,255,0.1);
-        border-radius: 4px;
-    }
-
-    .nav a:hover {
-        opacity: 0.9;
-    }
-
     .content-card {
-        background: white;
-        border-radius: 8px;
-        padding: 2rem;
-        margin: 2rem 0;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      padding: 1rem;
     }
-
-    @media (max-width: 768px) {
-        .container {
-            padding: 10px;
-        }
-        
-        .nav {
-            flex-direction: column;
-            text-align: center;
-            gap: 0.5rem;
-        }
-        
-        .content-card {
-            padding: 1rem;
-        }
-    }
+  }
 </style>
 """
 
@@ -128,7 +115,7 @@ def sanitize_filename(name: str) -> str:
 
 def process_entry(file_path: Path, section: str, subsection: str = None):
     try:
-        if file_path.suffix.lower() not in ALLOWED_EXT or file_path.name == '.placeholder':
+        if file_path.suffix.lower() not in ALLOWED_EXT or file_path.name.startswith('.'):
             return None
 
         base_name = sanitize_filename(file_path.stem)
@@ -184,7 +171,6 @@ def process_entry(file_path: Path, section: str, subsection: str = None):
             {"".join(f'<a href="{link}"{" class=active" if title == current_page else ""}>{title}</a>' for link, title in nav_links)}
         </nav>
     </header>
-
     <div class="container">
         <div class="content-card">
             <h1>{base_name.replace('-', ' ').title()}</h1>
@@ -206,6 +192,10 @@ def process_entry(file_path: Path, section: str, subsection: str = None):
 
 def generate_indexes():
     try:
+        # Force create directories first
+        (PUBLIC_DIR / 'journal').mkdir(parents=True, exist_ok=True)
+        (PUBLIC_DIR / 'legislative').mkdir(parents=True, exist_ok=True)
+
         # Main Index
         (PUBLIC_DIR / 'index.html').write_text(f"""<!DOCTYPE html>
 <html lang="en">
@@ -249,7 +239,7 @@ def generate_indexes():
 
         # Legislative Index
         legislative_public = SECTION_CONFIG['legislative']['public']
-        legislative_public.mkdir(parents=True, exist_ok=True)
+        legislative_public.mkdir(exist_ok=True)
         entries = list(legislative_public.glob('*.html'))
         entries = [e for e in entries if e.name != 'index.html']
         entries_html = '<ul>' + ''.join(
@@ -282,7 +272,7 @@ def generate_indexes():
 
         # Journal Index
         journal_public = SECTION_CONFIG['journal']['public']
-        journal_index = f"""<!DOCTYPE html>
+        (journal_public / 'index.html').write_text(f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -327,13 +317,12 @@ def generate_indexes():
         </div>
     </div>
 </body>
-</html>"""
-        (journal_public / 'index.html').write_text(journal_index)
+</html>""")
 
-        # Generate subsection indexes
+        # Subsection Indexes
         for subsection in SECTION_CONFIG['journal']['subsections']:
             subsection_public = journal_public / subsection
-            subsection_public.mkdir(parents=True, exist_ok=True)
+            subsection_public.mkdir(exist_ok=True)
             entries = list(subsection_public.glob('*.html'))
             entries = [e for e in entries if e.name != 'index.html']
             entries_html = '<ul>' + ''.join(
