@@ -47,22 +47,15 @@ jobs:
           rm -rf public
           mkdir -p journal/{personal,political,legal} legislative
           
-          # Create responsive test content
-          if [ ! -f journal/political/responsive-test.md ]; then
-            echo "# Responsive Design Test" > journal/political/responsive-test.md
-            echo "This entry tests mobile-first layouts!" >> journal/political/responsive-test.md
-          fi
-          if [ ! -f legislative/responsive-bill.md ]; then
-            echo "# Responsive Legislation" > legislative/responsive-bill.md
-            echo "Test document for cross-device compatibility" >> legislative/responsive-bill.md
-          fi
-
+          # Create test files
+          echo "# Test Entry" > journal/political/test.md
+          echo "# Test Bill" > legislative/bill.md
+      
           python generate_entries.py
-          
-          # Validate responsive output
-          [ -s public/index.html ] || (echo "Missing index.html" && exit 1)
-          [ -s public/journal/political/responsive-test.html ] || (echo "Responsive content failed" && exit 1)
-
+    
+    # Validate output
+    [ -s public/index.html ] || (echo "Index missing"; exit 1)
+    [ -s public/journal/political/test.html ] || (echo "Content missing"; exit 1)
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
