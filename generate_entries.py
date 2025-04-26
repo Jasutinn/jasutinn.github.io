@@ -29,8 +29,8 @@ SECTION_CONFIG = {
         'title': 'Journal Archive',
         'subsections': {
             'personal': {'title': 'Personal Journal', 'color': '#4A4A4A'},
-            'political': {'title': 'Political Journal', 'color': '#DC143C'},  # Changed title
-            'law': {'title': 'Law Journal', 'color': '#2B4D7A'}
+            'political': {'title': 'Political Journal', 'color': '#DC143C'},
+            'legal': {'title': 'Legal Journal', 'color': '#2B4D7A'}
         }
     }
 }
@@ -86,6 +86,11 @@ SHARED_CSS = """
         transition: opacity 0.3s;
     }
 
+    .nav a.active {
+        background: rgba(255,255,255,0.1);
+        border-radius: 4px;
+    }
+
     .nav a:hover {
         opacity: 0.9;
     }
@@ -113,10 +118,6 @@ SHARED_CSS = """
             padding: 1rem;
         }
     }
-
-    .political .content-card {
-        border-left: 4px solid var(--accent);
-    }
 </style>
 """
 
@@ -134,7 +135,7 @@ def process_entry(file_path: Path, section: str, subsection: str = None):
         
         output_path = config['public']
         nav_links = []
-        section_class = ''
+        current_page = ''
 
         if subsection:
             output_path = output_path / subsection
@@ -144,13 +145,13 @@ def process_entry(file_path: Path, section: str, subsection: str = None):
                 ('../', config['title']),
                 ('./', subsection_config['title'])
             ]
-            if subsection == 'political':
-                section_class = 'class="political"'
+            current_page = subsection_config['title']
         else:
             nav_links = [
                 ('../', 'Home'),
                 ('./', config['title'])
             ]
+            current_page = config['title']
 
         output_path.mkdir(parents=True, exist_ok=True)
         output_file = output_path / f"{base_name}.html"
@@ -169,22 +170,23 @@ def process_entry(file_path: Path, section: str, subsection: str = None):
                 content = f"<pre>{f.read()}</pre>"
 
         html = f"""<!DOCTYPE html>
-<html lang="en" {section_class}>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{base_name.replace('-', ' ').title()} | {SITE_TITLE}</title>
+    <title>{base_name.replace('-', ' ').title()} | {current_page}</title>
     {SHARED_CSS}
 </head>
 <body>
     <header class="header">
         <nav class="nav">
-            {"".join(f'<a href="{link}">{title}</a>' for link, title in nav_links)}
+            {"".join(f'<a href="{link}"{" class=active" if title == current_page else ""}>{title}</a>' for link, title in nav_links)}
         </nav>
     </header>
 
     <div class="container">
         <div class="content-card">
+            <h1>{base_name.replace('-', ' ').title()}</h1>
             <article class="content">
                 {content}
             </article>
@@ -233,10 +235,10 @@ def generate_indexes():
                 <section>
                     <h2 style="color: {SECTION_CONFIG['journal']['subsections']['political']['color']};">
                         <a href="journal/" style="text-decoration: none; color: inherit;">
-                            Journal Archive
+                            Journal Collections
                         </a>
                     </h2>
-                    <p>Access political analysis and strategy documents</p>
+                    <p>Strategic analyses and policy evaluations</p>
                 </section>
             </div>
         </div>
@@ -249,14 +251,14 @@ def generate_indexes():
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Legislative Documents</title>
+    <title>Active Legislation</title>
     {SHARED_CSS}
 </head>
 <body>
     <header class="header">
         <nav class="nav">
             <a href="../">Home</a>
-            <a href="./">Legislative Agenda</a>
+            <a href="./" class="active">Legislative Agenda</a>
         </nav>
     </header>
     <div class="container">
@@ -279,7 +281,7 @@ def generate_indexes():
     <header class="header">
         <nav class="nav">
             <a href="../">Home</a>
-            <a href="./">Journal Archive</a>
+            <a href="./" class="active">Journal Archive</a>
         </nav>
     </header>
     <div class="container">
@@ -302,9 +304,9 @@ def generate_indexes():
                     <p>Strategic analyses and policy evaluations</p>
                 </section>
                 <section>
-                    <h2 style="color: {SECTION_CONFIG['journal']['subsections']['law']['color']};">
-                        <a href="law/" style="text-decoration: none; color: inherit;">
-                            Law Journal
+                    <h2 style="color: {SECTION_CONFIG['journal']['subsections']['legal']['color']};">
+                        <a href="legal/" style="text-decoration: none; color: inherit;">
+                            Legal Journal
                         </a>
                     </h2>
                     <p>Legal research and case studies</p>
