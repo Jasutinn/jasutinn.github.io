@@ -62,9 +62,26 @@ def generate_indexes():
     {SHARED_CSS}
 </head>
 <body>
-    <!-- ... [keep main index content] ... -->
+    <header class="header">
+        <nav class="nav">
+            <a href="./">Home</a>
+            <a href="journal/">Journal</a>
+            <a href="legislative/">Legislative</a>
+        </nav>
+    </header>
+    <div class="container">
+        <h1>Welcome to {SITE_TITLE}</h1>
+        <div class="grid">
+            <a href="journal/" class="card">
+                <h2>Journal Archive</h2>
+            </a>
+            <a href="legislative/" class="card">
+                <h2>Legislative Agenda</h2>
+            </a>
+        </div>
+    </div>
 </body>
-</html>""")  # <-- Closing parenthesis added here (critical)
+</html>""")
 
         # Journal Index
         journal_public = PUBLIC_DIR / 'journal'
@@ -77,7 +94,22 @@ def generate_indexes():
     {SHARED_CSS}
 </head>
 <body>
-    <!-- ... [keep journal index content] ... -->
+    <header class="header">
+        <nav class="nav">
+            <a href="../../">Home</a>
+            <a href="./" class="active">Journal Archive</a>
+        </nav>
+    </header>
+    <div class="container">
+        <div class="content-card">
+            <h1>Journal Entries</h1>
+            <div class="grid">
+                <a href="personal/" class="card">Personal</a>
+                <a href="political/" class="card">Political</a>
+                <a href="legal/" class="card">Legal</a>
+            </div>
+        </div>
+    </div>
 </body>
 </html>""")
 
@@ -92,7 +124,20 @@ def generate_indexes():
     {SHARED_CSS}
 </head>
 <body>
-    <!-- ... [keep legislative index content] ... -->
+    <header class="header">
+        <nav class="nav">
+            <a href="../../">Home</a>
+            <a href="./" class="active">Legislative Agenda</a>
+        </nav>
+    </header>
+    <div class="container">
+        <div class="content-card">
+            <h1>Legislative Proposals</h1>
+            <ul>
+                <li><a href="sample.html">Sample Proposal</a></li>
+            </ul>
+        </div>
+    </div>
 </body>
 </html>""")
 
@@ -101,7 +146,6 @@ def generate_indexes():
             subsection_public = journal_public / subsection
             subsection_public.mkdir(parents=True, exist_ok=True)
             
-            # Subsection Index
             subsection_config = SECTION_CONFIG['journal']['subsections'][subsection]
             (subsection_public / 'index.html').write_text(f"""<!DOCTYPE html>
 <html lang="en">
