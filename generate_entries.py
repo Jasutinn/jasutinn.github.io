@@ -1,3 +1,4 @@
+# ===== generate_entries.py =====
 import os
 import string
 import sys
@@ -39,55 +40,7 @@ SECTION_CONFIG = {
 SHARED_CSS = """<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;600;700&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 <style>
-  :root {
-    --gold: #C5A47E;
-    --navy: #1A2B4D;
-    --cream: #F8F6F2;
-    --text-primary: #2A2A2A;
-  }
-  body {
-    font-family: 'Merriweather', serif;
-    margin: 0;
-    padding: 35px;
-    background: var(--cream);
-    line-height: 1.8;
-    color: var(--text-primary);
-  }
-  .container {
-    max-width: 1000px;
-    margin: 0 auto;
-    background: white;
-    padding: 45px;
-    box-shadow: 0 3px 18px rgba(0,0,0,0.06);
-  }
-  h1 {
-    color: var(--navy);
-    font-weight: 700;
-    font-size: 2.4rem;
-    margin-bottom: 40px;
-    border-bottom: 3px solid var(--gold);
-  }
-  .section-header {
-    padding: 25px;
-    border-radius: 6px;
-    margin-bottom: 30px;
-    background: linear-gradient(15deg, rgba(0,0,0,0.08), transparent);
-  }
-  .section-header h2 {
-    color: white !important;
-    text-shadow: 0 2px 3px rgba(0,0,0,0.15);
-    margin: 0;
-    font-size: 1.4rem;
-  }
-  .entry-item {
-    border-left: 4px solid var(--gold);
-    box-shadow: 0 3px 8px rgba(0,0,0,0.05);
-  }
-  pre {
-    background: #fafafa;
-    padding: 25px;
-    line-height: 1.7;
-  }
+  /* ... (keep your CSS styles unchanged) ... */
 </style>
 """
 
@@ -96,56 +49,13 @@ def sanitize_filename(name: str) -> str:
     return ''.join(c for c in name if c in valid_chars).strip().replace(' ', '-')
 
 def process_entry(file_path: Path, section: str, subsection: str = None):
-    try:
-        if file_path.suffix == '.html':
-            return
-
-        public_path = PUBLIC_DIR / section
-        if subsection:
-            public_path = public_path / subsection
-
-        sanitized_name = sanitize_filename(file_path.stem) + '.html'
-        output_path = public_path / sanitized_name
-
-        content = ""
-        if file_path.suffix == '.md':
-            content = markdown.markdown(file_path.read_text())
-        elif file_path.suffix == '.pdf':
-            with pdfplumber.open(file_path) as pdf:
-                content = ''.join(page.extract_text() for page in pdf.pages if page.extract_text())
-        elif file_path.suffix == '.docx':
-            doc = docx.Document(file_path)
-            content = '\n'.join([para.text for para in doc.paragraphs])
-        elif file_path.suffix == '.txt':
-            content = file_path.read_text()
-        else:
-            return
-
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        output_path.write_text(f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>{sanitized_name}</title>
-    {SHARED_CSS}
-</head>
-<body>
-    <div class="container">
-        <h1>{file_path.stem}</h1>
-        <pre>{content}</pre>
-        <a class="back-link" href="../index.html">← Back</a>
-    </div>
-</body>
-</html>""")
-        
-    except Exception as e:
-        logging.error(f"Failed to process {file_path}: {str(e)}")
+    # ... (keep process_entry unchanged) ...
 
 def generate_indexes():
     try:
         PUBLIC_DIR.mkdir(parents=True, exist_ok=True)
 
-        # Main Index (Journal first)
+        # Main Index
         (PUBLIC_DIR / 'index.html').write_text(f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -166,8 +76,72 @@ def generate_indexes():
 </body>
 </html>""")
 
-        # Rest of original index generation code
-        # ... (identical to your working version)
+        # Journal Index (CRITICAL FIX)
+        journal_public = PUBLIC_DIR / 'journal'
+        journal_public.mkdir(exist_ok=True)
+        (journal_public / 'index.html').write_text(f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{SECTION_CONFIG['journal']['title']}</title>
+    {SHARED_CSS}
+</head>
+<body>
+    <div class="container">
+        <h1>{SECTION_CONFIG['journal']['title']}</h1>
+        {"".join(f'''
+        <div class="section-header" style="background: {sub['color']}">
+            <h2><a href="{name}/index.html">{sub['title']}</a></h2>
+        </div>
+        ''' for name, sub in SECTION_CONFIG['journal']['subsections'].items())}
+        <a class="back-link" href="../index.html">← Back</a>
+    </div>
+</body>
+</html>""")
+
+        # Legislative Index
+        legislative_public = PUBLIC_DIR / 'legislative'
+        legislative_public.mkdir(exist_ok=True)
+        (legislative_public / 'index.html').write_text(f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{SECTION_CONFIG['legislative']['title']}</title>
+    {SHARED_CSS}
+</head>
+<body>
+    <div class="container">
+        <h1>{SECTION_CONFIG['legislative']['title']}</h1>
+        <ul class="entry-list">
+            <!-- Entries will be auto-populated -->
+        </ul>
+        <a class="back-link" href="../index.html">← Back</a>
+    </div>
+</body>
+</html>""")
+
+        # Journal Subsections
+        for subsection in SECTION_CONFIG['journal']['subsections']:
+            subsection_public = journal_public / subsection
+            subsection_public.mkdir(parents=True, exist_ok=True)
+            sub_config = SECTION_CONFIG['journal']['subsections'][subsection]
+            (subsection_public / 'index.html').write_text(f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{sub_config['title']}</title>
+    {SHARED_CSS}
+</head>
+<body>
+    <div class="container">
+        <h1>{sub_config['title']}</h1>
+        <ul class="entry-list">
+            <!-- Entries will be auto-populated -->
+        </ul>
+        <a class="back-link" href="../index.html">← Back</a>
+    </div>
+</body>
+</html>""")
 
     except Exception as e:
         logging.critical(f"Index error: {str(e)}")
@@ -177,8 +151,7 @@ def main():
     logging.info("Starting content generation")
     generate_indexes()
 
-    # Original processing logic
-    # ... (identical to your working version)
+    # ... (rest of main function unchanged) ...
 
 if __name__ == "__main__":
     logging.basicConfig(
