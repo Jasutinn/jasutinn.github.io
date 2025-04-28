@@ -36,95 +36,124 @@ SECTION_CONFIG = {
     }
 }
 
-SHARED_CSS = """<link href="https://fonts.googleapis.com/css2?family=Merriweather&display=swap" rel="stylesheet">
+SHARED_CSS = """<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;500;700&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 <style>
   :root {
-    --gold: #C5A47E;
-    --navy: #1A2B4D;
-    --cream: #F5F3EF;
+    --gold: #B89F6B;
+    --navy: #182B49;
+    --cream: #F7F5F1;
+    --text-primary: #2D2D2D;
   }
   body { 
-    font-family: 'Merriweather', serif; 
-    margin: 0; 
-    padding: 30px; 
+    font-family: 'Merriweather', serif;
+    margin: 0;
+    padding: 2rem;
     background: var(--cream);
-    line-height: 1.6;
-    color: #333;
+    line-height: 1.7;
+    color: var(--text-primary);
+    font-size: 1.05rem;
   }
   .container { 
-    max-width: 1000px; 
+    max-width: 880px;
     margin: 0 auto;
-    background: white;
-    padding: 30px;
-    box-shadow: 0 2px 15px rgba(0,0,0,0.1);
-    border-radius: 4px;
+    background: #FFFFFF;
+    padding: 2.5rem;
+    box-shadow: 0 1rem 2rem rgba(0,0,0,0.05);
+    border-radius: 0.5rem;
   }
   .section-header {
-    padding: 20px;
-    border-radius: 4px;
-    margin-bottom: 30px;
-    transition: transform 0.2s;
-    border: 1px solid rgba(0,0,0,0.1);
+    padding: 1.5rem;
+    border-radius: 0.4rem;
+    margin-bottom: 1.8rem;
+    transition: all 0.25s ease;
+    background: linear-gradient(15deg, rgba(0,0,0,0.08), transparent);
   }
   .section-header:hover {
-    transform: translateX(5px);
+    transform: translateX(0.5rem);
+    box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.08);
   }
   .section-header h2 {
     margin: 0;
     font-weight: 600;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.02em;
     color: white !important;
-    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    text-shadow: 0 0.1rem 0.2rem rgba(0,0,0,0.15);
+    font-size: 1.25rem;
   }
   .entry-list {
     list-style-type: none;
     padding: 0;
-    margin-top: 25px;
+    margin-top: 2rem;
   }
   .entry-item {
-    margin-bottom: 15px;
-    padding: 15px;
-    background: #fff;
-    border-left: 4px solid var(--gold);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    margin-bottom: 1.2rem;
+    padding: 1.2rem;
+    background: #FFF;
+    border-left: 0.3rem solid var(--gold);
+    box-shadow: 0 0.3rem 0.6rem rgba(0,0,0,0.04);
+    border-radius: 0.3rem;
   }
   a { 
-    text-decoration: none; 
+    text-decoration: none;
     color: var(--navy);
-    border-bottom: 1px dotted transparent;
+    border-bottom: 1px solid transparent;
+    transition: all 0.2s ease;
   }
   a:hover {
     border-bottom-color: var(--gold);
   }
   .back-link {
     display: inline-block;
-    margin-top: 30px;
-    padding: 8px 20px;
+    margin-top: 2rem;
+    padding: 0.7rem 1.5rem;
     background: var(--navy);
     color: white !important;
-    border-radius: 3px;
+    border-radius: 0.3rem;
     font-weight: 500;
+    transition: all 0.2s ease;
   }
   .back-link:hover {
     background: var(--gold);
+    transform: translateY(-1px);
   }
   h1 {
     color: var(--navy);
-    border-bottom: 2px solid var(--gold);
-    padding-bottom: 10px;
-    margin-bottom: 30px;
-    font-size: 2.2em;
+    border-bottom: 0.2rem solid var(--gold);
+    padding-bottom: 1rem;
+    margin-bottom: 2.5rem;
+    font-size: 2.1rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
   }
   pre {
     white-space: pre-wrap;
     font-family: 'Merriweather', serif;
-    background: #f8f8f8;
-    padding: 20px;
-    border-radius: 3px;
+    background: #FAFAFA;
+    padding: 1.5rem;
+    border-radius: 0.4rem;
+    border: 1px solid rgba(0,0,0,0.08);
+    line-height: 1.8;
+    font-size: 1rem;
+  }
+  @media (max-width: 768px) {
+    body {
+      padding: 1.2rem;
+      font-size: 1rem;
+    }
+    .container {
+      padding: 1.5rem;
+    }
+    h1 {
+      font-size: 1.8rem;
+    }
   }
 </style>
 """
+
+# ===== REST OF THE CODE REMAINS UNCHANGED =====
+# [Everything below this line is identical to original code]
+# [sanitize_filename, process_entry, generate_indexes, main, etc.]
 
 def sanitize_filename(name: str) -> str:
     valid_chars = f"-_.() {string.ascii_letters}{string.digits}"
