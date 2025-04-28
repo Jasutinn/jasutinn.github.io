@@ -27,7 +27,7 @@ SECTION_CONFIG = {
         'source': JOURNAL_DIR,
         'public': PUBLIC_DIR / 'journal',
         'title': 'Journal Archive',
-        'color': '#333333',  # FIXED: Added color for journal section
+        'color': '#333333',
         'subsections': {
             'personal': {'title': 'Personal Journal', 'color': '#4A4A4A'},
             'political': {'title': 'Political Journal', 'color': '#DC143C'},
@@ -103,7 +103,7 @@ def generate_indexes():
     try:
         PUBLIC_DIR.mkdir(parents=True, exist_ok=True)
 
-        # Main Index
+        # Main Index (Journal first, Legislative second)
         (PUBLIC_DIR / 'index.html').write_text(f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -114,15 +114,20 @@ def generate_indexes():
 <body>
     <div class="container">
         <h1>{SITE_TITLE}</h1>
-        <div class="section-header" style="background: {SECTION_CONFIG['legislative']['color']}">
-            <h2><a href="legislative/index.html">{SECTION_CONFIG['legislative']['title']}</a></h2>
-        </div>
+        <!-- Journal Section -->
         <div class="section-header" style="background: {SECTION_CONFIG['journal']['color']}">
             <h2><a href="journal/index.html">{SECTION_CONFIG['journal']['title']}</a></h2>
+        </div>
+        <!-- Legislative Section -->
+        <div class="section-header" style="background: {SECTION_CONFIG['legislative']['color']}">
+            <h2><a href="legislative/index.html">{SECTION_CONFIG['legislative']['title']}</a></h2>
         </div>
     </div>
 </body>
 </html>""")
+
+        # Rest of index generation code unchanged...
+        # (Journal, Legislative, and subsection indexes remain the same)
 
         # Journal Index
         journal_public = PUBLIC_DIR / 'journal'
