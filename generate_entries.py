@@ -39,13 +39,90 @@ SECTION_CONFIG = {
 SHARED_CSS = """<link href="https://fonts.googleapis.com/css2?family=Merriweather&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 <style>
-  body { font-family: 'Merriweather', serif; margin: 0; padding: 20px; }
-  .container { max-width: 800px; margin: 0 auto; }
-  .section-header { padding: 15px; border-radius: 5px; margin-bottom: 25px; }
-  .entry-list { list-style-type: none; padding: 0; }
-  .entry-item { margin-bottom: 15px; padding: 10px; background: #f8f9fa; border-radius: 3px; }
-  a { text-decoration: none; color: inherit; }
-  .back-link { display: block; margin-top: 20px; }
+  :root {
+    --gold: #C5A47E;
+    --navy: #1A2B4D;
+    --cream: #F5F3EF;
+  }
+  body { 
+    font-family: 'Merriweather', serif; 
+    margin: 0; 
+    padding: 30px; 
+    background: var(--cream);
+    line-height: 1.6;
+    color: #333;
+  }
+  .container { 
+    max-width: 1000px; 
+    margin: 0 auto;
+    background: white;
+    padding: 30px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+    border-radius: 4px;
+  }
+  .section-header {
+    padding: 20px;
+    border-radius: 4px;
+    margin-bottom: 30px;
+    transition: transform 0.2s;
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+  .section-header:hover {
+    transform: translateX(5px);
+  }
+  .section-header h2 {
+    margin: 0;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    color: white !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  }
+  .entry-list {
+    list-style-type: none;
+    padding: 0;
+    margin-top: 25px;
+  }
+  .entry-item {
+    margin-bottom: 15px;
+    padding: 15px;
+    background: #fff;
+    border-left: 4px solid var(--gold);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  }
+  a { 
+    text-decoration: none; 
+    color: var(--navy);
+    border-bottom: 1px dotted transparent;
+  }
+  a:hover {
+    border-bottom-color: var(--gold);
+  }
+  .back-link {
+    display: inline-block;
+    margin-top: 30px;
+    padding: 8px 20px;
+    background: var(--navy);
+    color: white !important;
+    border-radius: 3px;
+    font-weight: 500;
+  }
+  .back-link:hover {
+    background: var(--gold);
+  }
+  h1 {
+    color: var(--navy);
+    border-bottom: 2px solid var(--gold);
+    padding-bottom: 10px;
+    margin-bottom: 30px;
+    font-size: 2.2em;
+  }
+  pre {
+    white-space: pre-wrap;
+    font-family: 'Merriweather', serif;
+    background: #f8f8f8;
+    padding: 20px;
+    border-radius: 3px;
+  }
 </style>
 """
 
@@ -103,7 +180,7 @@ def generate_indexes():
     try:
         PUBLIC_DIR.mkdir(parents=True, exist_ok=True)
 
-        # Main Index (Journal first, Legislative second)
+        # Main Index (Journal first)
         (PUBLIC_DIR / 'index.html').write_text(f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -114,20 +191,15 @@ def generate_indexes():
 <body>
     <div class="container">
         <h1>{SITE_TITLE}</h1>
-        <!-- Journal Section -->
         <div class="section-header" style="background: {SECTION_CONFIG['journal']['color']}">
             <h2><a href="journal/index.html">{SECTION_CONFIG['journal']['title']}</a></h2>
         </div>
-        <!-- Legislative Section -->
         <div class="section-header" style="background: {SECTION_CONFIG['legislative']['color']}">
             <h2><a href="legislative/index.html">{SECTION_CONFIG['legislative']['title']}</a></h2>
         </div>
     </div>
 </body>
 </html>""")
-
-        # Rest of index generation code unchanged...
-        # (Journal, Legislative, and subsection indexes remain the same)
 
         # Journal Index
         journal_public = PUBLIC_DIR / 'journal'
