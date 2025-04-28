@@ -44,21 +44,14 @@ jobs:
 
       - name: Generate Content
         run: |
-          # Clean workspace
           rm -rf public
           mkdir -p public
-
-          # Create mandatory sample content
           mkdir -p journal/{personal,political,legal} legislative
           echo "# Sample Entry" > journal/personal/sample.md
           echo "# Sample Analysis" > journal/political/sample.md
           echo "# Legal Case" > journal/legal/sample.md
           echo "# Proposed Bill" > legislative/sample.md
-
-          # Generate HTML files
           python generate_entries.py
-
-          # Validate all critical files
           check_files=(
             "/index.html"
             "/journal/index.html"
@@ -71,14 +64,12 @@ jobs:
             "/journal/legal/sample.html"
             "/legislative/sample.html"
           )
-
           for file in "${check_files[@]}"; do
             if [ ! -s "public${file}" ]; then
               echo "❌ Missing file: public${file}"
               exit 1
             fi
           done
-
           echo "✅ Verified all files:"
           tree public
 
