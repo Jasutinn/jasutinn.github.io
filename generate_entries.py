@@ -27,6 +27,7 @@ SECTION_CONFIG = {
         'source': JOURNAL_DIR,
         'public': PUBLIC_DIR / 'journal',
         'title': 'Journal Archive',
+        'color': '#333333',  # FIXED: Added color for journal section
         'subsections': {
             'personal': {'title': 'Personal Journal', 'color': '#4A4A4A'},
             'political': {'title': 'Political Journal', 'color': '#DC143C'},
